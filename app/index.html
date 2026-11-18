@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>刷单词 · 词库练习</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ======== 顶部导航 ======== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" id="nav-home">📖 刷单词</div>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="home">选课</button>
+        <button class="nav-btn" data-view="game">小游戏</button>
+        <button class="nav-btn" data-view="manage">词库管理</button>
+        <button class="nav-btn" data-view="stats">统计</button>
+      </nav>
+      <div class="top-actions">
+        <span id="save-hint" class="save-hint"></span>
+        <button id="btn-export" class="ghost-btn" title="导出词库 + 学习进度/收藏">导出</button>
+        <button id="btn-import" class="ghost-btn" title="导入词库 + 学习进度/收藏">导入</button>
+        <input type="file" id="import-file" accept=".json" hidden>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======== 首页: 选择 Lesson ======== -->
+  <main id="view-home" class="view">
+    <section class="panel">
+      <div class="stats-row" id="stats-row"></div>
+      <div class="part-tabs" id="part-tabs"></div>
+      <div class="home-toolbar">
+        <h2 id="part-title">选择本次要刷的 Lesson</h2>
+        <div class="toolbar-btns">
+          <button id="sel-all" class="ghost-btn">全选</button>
+          <button id="sel-none" class="ghost-btn">清空</button>
+          <button id="sel-unk" class="ghost-btn" title="只选中包含不认识单词的课">只选有生词的课</button>
+          <button id="sel-reset" class="ghost-btn danger" title="清空所有认识/不认识记录">清空进度</button>
+        </div>
+      </div>
+      <div class="grid-options">
+        <label class="toggle"><input type="checkbox" id="opt-shuffle"> 随机顺序</label>
+        <label class="toggle"><input type="checkbox" id="opt-unknown-only" title="跳过已标记“认识”的词"> 只刷不认识的</label>
+        <span class="grid-hint">选中课程后按 <kbd>Enter</kbd> 开始刷词</span>
+      </div>
+      <div id="lesson-grid" class="lesson-grid"></div>
+      <div class="home-start">
+        <span class="sel-count" id="sel-count"></span>
+        <button id="btn-start" class="primary-btn big">开始刷词 → <kbd>Enter</kbd></button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======== 刷词页 ======== -->
+  <main id="view-study" class="view" hidden>
+    <div class="study-top">
+      <button id="btn-back" class="ghost-btn">← 退出</button>
+      <div class="study-progress-wrap">
+        <div class="study-progress-bar"><div id="study-progress" class="study-progress-fill"></div></div>
+        <div class="study-progress-text" id="study-pos">0 / 0</div>
+      </div>
+      <div class="study-top-actions">
+        <button id="btn-star" class="ghost-btn star-btn" title="收藏当前单词 (S)">☆ 收藏</button>
+        <button id="btn-edit-current" class="ghost-btn" title="编辑当前词条">✏️ 编辑</button>
+      </div>
+    </div>
+
+    <button id="study-lesson" class="study-lesson-badge" title="点击快速修改分组 / 词条"></button>
+
+    <div id="card-viewport">
+    <section class="card" id="card">
+      <!-- 第一部分: 单词 + 音标 -->
+      <div class="card-part part-word" id="part-word">
+        <div class="word-line">
+          <h1 class="word" id="w-word">—</h1>
+          <button id="btn-speak" class="icon-btn" title="朗读单词 (E)">🔊</button>
+        </div>
+        <div class="phonetic" id="w-phonetic"></div>
+        <div class="word-flags" id="w-flags"></div>
+      </div>
+
+      <!-- 第二部分: 词义 (可遮罩) -->
+      <div class="card-part part-meaning" id="part-meaning">
+        <div class="part-label">词义</div>
+        <div class="maskable" id="mask-meaning">
+          <div class="meaning-text" id="w-meaning"></div>
+          <div class="mask-overlay"><span>点击显示词义</span></div>
+        </div>
+      </div>
+
+      <!-- 第三部分: 记忆 + 例句 (可遮罩) -->
+      <div class="card-part part-mem" id="part-mem">
+        <div class="part-label">记忆 · 例句</div>
+        <div class="maskable" id="mask-mem">
+          <div class="mem-inner" id="w-mem"></div>
+          <div class="mask-overlay"><span>点击显示记忆 & 例句</span></div>
+        </div>
+      </div>
+
+      <!-- 更多: 辨析/备注/短语 -->
+      <details class="card-extra" id="w-extra-wrap" hidden>
+        <summary>辨析 · 短语 · 备注</summary>
+        <div id="w-extra"></div>
+      </details>
+    </section>
+    </div>
+
+    <div class="study-controls">
+      <button id="btn-prev" class="ctrl-btn">← 上一个</button>
+      <div class="know-btns">
+        <button id="btn-unknown" class="know-btn unknown">😵 不认识</button>
+        <button id="btn-known" class="know-btn known">😀 认识</button>
+      </div>
+      <button id="btn-next" class="ctrl-btn">下一个 →</button>
+    </div>
+    <div class="study-settings">
+      <label>遮罩模式
+        <select id="opt-mask-mode">
+          <option value="both">遮词义+记忆例句（点击一起显示）</option>
+          <option value="separate">分段遮罩（分别点击）</option>
+          <option value="mem-only">只遮记忆例句</option>
+          <option value="none">全部显示</option>
+          <option value="word">遮单词（看意思回忆）</option>
+        </select>
+      </label>
+      <label>发音
+        <select id="opt-accent">
+          <option value="uk">英音（在线高清）</option>
+          <option value="us">美音（在线高清）</option>
+          <option value="sys">系统语音</option>
+        </select>
+      </label>
+      <label class="toggle"><input type="checkbox" id="opt-auto-speak"> 自动朗读</label>
+      <label class="toggle"><input type="checkbox" id="opt-auto-reveal"> 自动显示词义</label>
+      <label class="toggle"><input type="checkbox" id="opt-auto-next-known"> 标记认识后自动下一个</label>
+    </div>
+    <div class="study-hint">快捷键：空格 显示 / ←→ 翻页 / 1 认识 / 2 不认识 / E 朗读 / S 收藏 / Q 修改</div>
+  </main>
+
+  <!-- ======== 刷词快速修改面板 ======== -->
+  <div id="quick-mask" class="quick-mask" hidden>
+    <div class="quick-box" role="dialog" aria-modal="true">
+      <div class="quick-head">
+        <h3>⚡ 快速修改</h3>
+        <button id="quick-close" class="icon-btn" title="关闭">✕</button>
+      </div>
+      <div class="quick-body">
+        <p class="quick-tip">修改后立即保存到词库，卡片与徽标同步更新</p>
+        <div class="two-col">
+          <label>单词<input id="q-word" autocomplete="off"></label>
+          <label>音标（英音 · 默认显示）<input id="q-phonetic-uk" autocomplete="off"></label>
+        </div>
+        <label>音标（美音，可选）<input id="q-phonetic" autocomplete="off"></label>
+        <label>词义<input id="q-meaning" autocomplete="off"></label>
+        <label>徽标上的编组名（如「ward 相关」，留空则不显示）<input id="q-group" autocomplete="off"></label>
+        <div class="three-col">
+          <label>Part
+            <select id="q-part">
+              <option value="1">Part 1 核心词</option>
+              <option value="2">Part 2 基础词</option>
+              <option value="3">Part 3 扩展词</option>
+            </select>
+          </label>
+          <label>Unit<input id="q-unit" type="number" min="0"></label>
+          <label>Lesson<input id="q-lesson" type="number" min="0"></label>
+        </div>
+      </div>
+      <div class="quick-foot">
+        <button id="quick-full" class="ghost-btn" title="打开完整编辑（例句、记忆等全部字段）">✏️ 完整编辑</button>
+        <span class="flex-space"></span>
+        <button id="quick-cancel" class="ghost-btn">取消</button>
+        <button id="quick-save" class="primary-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 单词列表(已收藏 / 不认识) ======== -->
+  <main id="view-words" class="view" hidden>
+    <section class="panel">
+      <div class="wl-head">
+        <button id="wl-back" class="ghost-btn">← 返回</button>
+        <h2 id="wl-title">已收藏的单词</h2>
+        <span class="wl-count" id="wl-count"></span>
+      </div>
+      <div class="manage-toolbar">
+        <input id="wl-search" type="search" placeholder="搜索单词 / 词义…">
+        <button id="wl-study" class="primary-btn">刷这些单词 →</button>
+      </div>
+      <div class="wl-options">
+        <label class="toggle"><input type="checkbox" id="wl-mask-toggle"> 遮挡词义（逐个点击显示）</label>
+        <button id="wl-reveal-all" class="ghost-btn" title="显示当前页全部词义">显示全部</button>
+        <label class="toggle"><input type="checkbox" id="wl-group"> 按 Unit 分组</label>
+        <label class="wl-size-label">每页
+          <select id="wl-size">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </label>
+      </div>
+      <div id="wl-list" class="mg-list"></div>
+      <div class="mg-pager">
+        <button id="wl-first" class="ghost-btn" title="第一页">«</button>
+        <button id="wl-prev" class="ghost-btn">上一页</button>
+        <span id="wl-page-info"></span>
+        <button id="wl-next" class="ghost-btn">下一页</button>
+        <button id="wl-last" class="ghost-btn" title="最后一页">»</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======== 词库管理 ======== -->
+  <main id="view-manage" class="view" hidden>
+    <section class="panel">
+      <div class="manage-toolbar">
+        <input id="mg-search" type="search" placeholder="搜索单词 / 词义 / 例句…">
+        <select id="mg-lesson"><option value="">全部 Lesson</option></select>
+        <button id="mg-swap-mode" class="ghost-btn" title="选两行交换位置，修正 OCR 顺序">⇅ 交换位置</button>
+        <button id="mg-swap-do" class="primary-btn" hidden disabled>交换选中两行</button>
+        <button id="mg-add" class="primary-btn">+ 新增词条</button>
+      </div>
+      <div class="mg-tip" id="mg-tip">💡 单击选中 · <b>双击任意行 = 在其后插入新词</b> · 点 ✏️ 编辑 · 选中后点「+ 新增词条」效果相同</div>
+      <div id="mg-list" class="mg-list"></div>
+      <div class="mg-pager">
+        <button id="mg-prev" class="ghost-btn">上一页</button>
+        <span id="mg-page-info"></span>
+        <button id="mg-next" class="ghost-btn">下一页</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======== 统计 ======== -->
+  <main id="view-stats" class="view" hidden>
+    <section class="panel">
+      <h2>学习统计</h2>
+      <div class="stats-row" id="stats-row2"></div>
+      <div id="stats-lessons"></div>
+      <div class="stats-actions">
+        <button id="btn-reset-progress" class="ghost-btn danger">清空学习进度</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======== 小游戏 ======== -->
+  <main id="view-game" class="view" hidden>
+    <div id="game-root"></div>
+  </main>
+
+  <!-- ======== 编辑弹窗 ======== -->
+  <div id="modal-mask" class="modal-mask" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">编辑词条</h3>
+        <button id="modal-close" class="icon-btn">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button id="modal-youdao" class="ghost-btn" title="从有道补全空的音标与释义">🔄 有道补全</button>
+        <button id="modal-delete" class="ghost-btn danger">删除词条</button>
+        <span class="flex-space"></span>
+        <button id="modal-cancel" class="ghost-btn">取消</button>
+        <button id="modal-save" class="primary-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+</div>
+<script src="games.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

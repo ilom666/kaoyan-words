@@ -1,0 +1,14 @@
+# 原书扫描件（体积大，不随仓库发布）
+*.pdf
+
+# OCR 提取与解析脚本（不随仓库发布）
+.extract/
+
+# 本地运行时自动生成的文件
+data/words.backup.json
+data/quality_report.txt
+
+# Python / 系统临时文件
+__pycache__/
+*.py[cod]
+.DS_Store
