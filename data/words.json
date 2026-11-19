@@ -8477,7 +8477,7 @@
    "id": 234,
    "word": "stiff",
    "phonetic": "/stɪf/",
-   "meaning": "adj，優硬的；生硬的；严厉的；艰难的",
+   "meaning": "adj，僵硬的；生硬的；严厉的；艰难的",
    "hints": [
     {
      "type": "联想",
@@ -8505,7 +8505,7 @@
    "page": 42,
    "unit": 2,
    "lesson": 6,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核",
    "suspect": "",
    "phonetic_uk": "/stɪf/",
@@ -9019,7 +9019,7 @@
    "id": 250,
    "word": "lean",
    "phonetic": "/liːn/",
-   "meaning": "adj.瘦的；贫瘠的，贫乏的；不景气的；精干的v.倾斜；倚靠；(~on)依赖，依靠",
+   "meaning": "adj.瘦的；贫瘠的，贫乏的；不景气的；精干的v.倾斜；倚靠；V.依赖，依靠",
    "hints": [
     {
      "type": "形近对照",
@@ -9045,7 +9045,7 @@
    "page": 45,
    "unit": 2,
    "lesson": 6,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/liːn/",
@@ -12137,7 +12137,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "re(联想成“阿姨”)+cru(联想成“可2 +it(它) 阿姨也可以加入这个俱乐部，成为新成员一新成员。"
+     "text": "re(联想成“阿姨”)+cru(联想成“可侮辱)+it(它) 阿姨可以侮辱新成员。"
     }
    ],
    "example_en": "",
@@ -19579,7 +19579,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "爱（ap）怕（pa）弄坏这套瑞特（ra）斯（tus）仪器！"
+     "text": "appar(联想成apper“出现”)+a（一个）+tus（吐丝）->出现了一个吐丝的东西->原来是春蝉吐司，现在不用了，用“机械，仪器”来吐丝，这就是科技的力量"
     }
    ],
    "example_en": "Firefighters needed breathing apparatus to ienter the burning house",
@@ -21293,8 +21293,13 @@
    "id": 584,
    "word": "fierce",
    "phonetic": "/fɪrs/",
-   "meaning": "adj. 凶猛的；强烈的；猛烈的；狂暴的；狂热的诸音：发音类似“飞蛾死” 飞蛾扑火的时候是不是很“狂热的；凶猛的”？",
-   "hints": [],
+   "meaning": "adj. 凶猛的；强烈的；猛烈的；狂暴的；狂热的",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "发音类似“飞蛾死” 飞蛾扑火的时候是不是很“狂热的；凶猛的”"
+    }
+   ],
    "example_en": "Any threat of monopoly,they argue,is removed by fierce competition from trucks",
    "example_zh": "他们认为，在公路运输的激烈竞争面前，垄断的威胁已经不复存在。",
    "derivatives": [
@@ -21315,7 +21320,7 @@
    "page": 100,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/fɪəs/",
@@ -21329,7 +21334,7 @@
    "hints": [
     {
      "type": "谐音",
-     "text": "发音类似“靠我的”一-他是个“懦夫”，遇到事情光靠我。"
+     "text": "发音类似“靠我的”----他是个“懦夫”，遇到事情光靠我。"
     }
    ],
    "example_en": "the dentist",
@@ -21350,7 +21355,7 @@
    "page": 100,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈkaʊəd/",
@@ -21360,11 +21365,11 @@
    "id": 586,
    "word": "timid",
    "phonetic": "/ˈtɪmɪd/",
-   "meaning": "相关 rebe！v. 威胁；恐吓12 词根词级：in(使)+timid(胆小的)+ate(动词后缀)一使胆小一就是“威胁，恐吓”啊。n.恐吓，威胁；凶兆；构成威胁的人；形成威胁的事物",
+   "meaning": "adj. 羞怯的，胆小的",
    "hints": [
     {
      "type": "谐音",
-     "text": "发音类似：他妈的(骂人的脏话)。他？2的性格很胆小，受了欺负也不敢骂人一胆怯的。"
+     "text": "发音类似：他妈的(骂人的脏话)。他的性格很胆小，受了欺负也不敢骂人一胆怯的。"
     }
    ],
    "example_en": "Timid children need careful handling to build up theit confidence intimidate /in'tmdert He was not a man to be easily intimidated.  threat /0ret Scientists in one wave after another try 10 awaken us to the growing threat of global warming",
@@ -21374,10 +21379,8 @@
    ],
    "synonyms": "",
    "phrases": [],
-   "compare": "",
-   "notes": [
-    "有⋯⋯危险 ◎"
-   ],
+   "compare": "有⋯⋯危险 ◎",
+   "notes": [],
    "no": null,
    "group": "害怕、威胁、恐吓“相关",
    "related": [
@@ -21389,21 +21392,71 @@
    "page": 100,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "词义过长",
    "phonetic_uk": "/ˈtɪmɪd/",
    "phonetic_src": "dict"
   },
   {
-   "id": 587,
-   "word": "frighten",
-   "phonetic": "/ˈfraɪt(ə)n/",
-   "meaning": "他说他爱眼你打架(fight)，其实又是吓吧(frighten) 你n.惊恐；恐惧；恐怖，恐怖行动",
+   "word": "intimidate",
+   "phonetic": "/ɪnˈtɪmɪdeɪt/",
+   "phonetic_uk": "/ɪnˈtɪmɪdeɪt/",
+   "meaning": "v. 恫吓，威胁",
+   "hints": [
+    {
+     "type": "词根",
+     "text": "in（使）你很胆小（timid）+ate动词后缀"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3862
+  },
+  {
+   "word": "threat",
+   "phonetic": "/θret/",
+   "phonetic_uk": "/θret/",
+   "meaning": "n. 威胁，恐吓；构成威胁的人（或事物）；凶兆；",
    "hints": [
     {
      "type": "谐音",
-     "text": "发音类似“太弱”。一个国家的政府吧太软弱，恐怖分子可能就很猖狂一恐怖行动，恐怖。"
+     "text": "threat → “斯拽特”"
+    },
+    {
+     "type": "联想",
+     "text": "他死死拽着你，发出威胁。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3863
+  },
+  {
+   "id": 587,
+   "word": "frighten",
+   "phonetic": "/ˈfraɪt(ə)n/",
+   "meaning": "v. 使惊吓，使惊恐",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "用花打你"
     }
    ],
    "example_en": "The prospcct of war really frightcns mc Tghcned fraitnd adj O fright /frantn terror ''tero(r)/ Her eyes were wild with terror",
@@ -21426,18 +21479,46 @@
    "page": 100,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈfraɪt(ə)n/",
    "phonetic_src": "dict"
   },
   {
+   "word": "terror",
+   "phonetic": "/ˈterər/",
+   "phonetic_uk": "/ˈterə(r)/",
+   "meaning": "n. 惊恐，恐惧；引起恐怖的人（或事物）；（尤指有政治目的的）恐怖活动，恐怖主义；<非正式>讨厌鬼，捣蛋鬼（尤指小孩）",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "发音类似“太弱”。一个国家的政府吧太软弱，恐怖分子可能就很猖狂一恐怖行动，恐怖。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3864
+  },
+  {
    "id": 588,
    "word": "terrify",
    "phonetic": "/ˈterɪfaɪ/",
-   "meaning": "v.使恐惧；便十分窗怕：使傢吓tCTT( LCTTOf 嗅)iy(动坷后鐵) 使“惧.",
-   "hints": [],
+   "meaning": "v. 使害怕，使恐惧",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "使你感到很恐怖-->威胁恐惧"
+    }
+   ],
    "example_en": "He tarrillied cmployces at the bank into handing over cash",
    "example_zh": "他恐吓很行职员交出现金，",
    "derivatives": [],
@@ -21456,7 +21537,7 @@
    "page": 101,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/ˈterɪfaɪ/",
@@ -21470,7 +21551,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "re(反复)+bel(联想成 bell”鈴”)•9 政府反复地按铃，提醒百姓们城里有“瓶乱者”-叛乱者。"
+     "text": "re(反复)+bel(联想成 bell\"铃\")政府反复地按铃，提醒百姓们城里有“叛乱者”-叛乱者。"
     }
    ],
    "example_en": "Most teenagers find something to rehel against",
@@ -21493,7 +21574,7 @@
    "page": 101,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/ˈreb(ə)l/",
@@ -21503,11 +21584,15 @@
    "id": 590,
    "word": "alarm",
    "phonetic": "/əˈlɑːrm/",
-   "meaning": "惊恐，惊慌；警报(器)；闹钟 v.使惊恐；使害怕",
+   "meaning": "n.惊恐，惊慌；警报(器)；闹钟 v.使惊恐；使害怕",
    "hints": [
     {
      "type": "联想",
-     "text": "a(一个)+1(联想成“拉”)+arm(胳牌)一他用一只胳牌拉什么？一他“害怕”啊，使劲拉“警报(器)”。"
+     "text": "a(一个)+1(联想成“拉”)+arm(胳膊)一他用一只胳膊拉什么？一他“害怕”啊，使劲拉“警报(器)”。"
+    },
+    {
+     "type": "联想",
+     "text": "一个拉姆，拉姆被老公烧死-->害怕"
     }
    ],
    "example_en": "S I can only guess that they don't want to alarm the public yet 4 alarmist /o'lo:must/adj",
@@ -21531,7 +21616,7 @@
    "page": 101,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "词头已自动修正;词头已自动修正",
    "phonetic_uk": "/əˈlɑːm/",
@@ -21541,15 +21626,11 @@
    "id": 591,
    "word": "panic",
    "phonetic": "/ˈpænɪk/",
-   "meaning": "n.惊慌，恐慌；人心惶惶的局面；惶恐不安v.(使)恐慌n.小心，谨慎；警告v.警告，劝••••小心；提醒",
+   "meaning": "n. 恐慌，惊慌；人心惶惶，惶恐不安； v.（使）恐慌，（使）惊慌失措",
    "hints": [
     {
      "type": "谐音",
-     "text": "发音类似“怕你磕”。小时候，大人都"
-    },
-    {
-     "type": "谐音",
-     "text": "发音类似“靠心”一为什么要靠心，因为要“谨慎”，处处小心一些！"
+     "text": "发音类似“怕你磕”-->惊恐惊慌"
     }
    ],
    "example_en": "There's probably little reason to pay attention to our dreams at all unless they keep us from sleeping or we wake up in a panic caution /'ko:jn Statistics should be treated with caution",
@@ -21575,18 +21656,46 @@
    "page": 101,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/ˈpænɪk/",
    "phonetic_src": "dict"
   },
   {
+   "word": "caution",
+   "phonetic": "/ˈkɔːʃ(ə)n/",
+   "phonetic_uk": "/ˈkɔːʃ(ə)n/",
+   "meaning": "n. 小心，谨慎；提醒，告诫；（警察向犯轻罪的人发出的）警告 v. 警告，提醒",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "发音类似“靠心”一为什么要靠心，因为要“谨慎”，处处小心一些！"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3865
+  },
+  {
    "id": 592,
    "word": "precaution",
    "phonetic": "/prɪˈkɔːʃn/",
-   "meaning": "考研英语你还在背单词吗词根调豪：Pre(提前)+caution(小心)一做事情前就小心一预防措施。",
-   "hints": [],
+   "meaning": "n. 预防措施，防备；避孕措施（precautions）",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "Pre(提前)+caution(小心)一做事情前就小心一预防措施。"
+    }
+   ],
    "example_en": "f You must take all reasonable precautlons to Protect yourself and your family",
    "example_zh": "你必须采取一切合理的预防措施，保护自己和家人。",
    "derivatives": [],
@@ -21608,7 +21717,7 @@
    "page": 101,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/prɪˈkɔːʃ(ə)n/",
@@ -21618,11 +21727,11 @@
    "id": 593,
    "word": "prudent",
    "phonetic": "/ˈpruːd(ə)nt/",
-   "meaning": "adj.谨慎的；慎 的；精明的",
+   "meaning": "adj.谨慎的；慎重的；精明的",
    "hints": [
     {
      "type": "联想",
-     "text": "Pru(联想成 pre\"提前\"+ dent(联想成•“等他”)一~谨慎起见，我提前去等他->谨慎的。"
+     "text": "Pru(联想成 pre\"提前\"+ dent(联想成“等他”)一~谨慎起见，我提前去等他->谨慎的。"
     }
    ],
    "example_en": "⑦ cautious, careful, wary",
@@ -21648,7 +21757,7 @@
    "page": 102,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/ˈpruːd(ə)nt/",
@@ -21658,11 +21767,15 @@
    "id": 594,
    "word": "alert",
    "phonetic": "/əˈlɜːrt/",
-   "meaning": "adj. 提防的，警惕的v.向⋯•⋯报警n、警报；警惕请音，发音类很“说了他”12他就或得很營惕了•警惕的。v. 滑(倒)；溜走；下降；偷偷放n. 纸条；便条",
+   "meaning": "adj. 警惕的，警觉的；机敏的，敏捷的；意识到，注意到（alert to） v. 向……报警，使警觉；提示，提醒（某人） n. 警报，警示；警戒，警惕；（电子设备的）提示信号；警戒期",
    "hints": [
     {
-     "type": "形近对照",
-     "text": "如果地上很滑(slippery)、你穿拖鞋(slippers)的话，会很容易滑倒(slip)。"
+     "type": "联想",
+     "text": "浏览器的alert弹窗-->提防，警惕"
+    },
+    {
+     "type": "联想",
+     "text": "以前都不快乐，现在有一个(a)快乐(le)的他(t)-->警惕，警觉"
     }
    ],
    "example_en": "C Try to stay alert while driving at nught slip /slp Standards have slipped in the last few years.",
@@ -21691,11 +21804,75 @@
    "page": 102,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/əˈlɜːt/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "slip",
+   "phonetic": "/slɪp/",
+   "phonetic_uk": "/slɪp/",
+   "meaning": "v. 滑倒，失足；滑落，脱落；溜走，悄悄地走；偷偷塞进；滑行，打滑；下降，变差；陷入；迅速穿上，迅速脱下；摆脱，挣脱；飞逝，过得飞快；被（某人）忘记；放出（动物，尤指猎狗）；（身体部分）移位，脱臼；（编织）挑过一针不结；略微松动（汽车离合器）；（动物）流产 n. 疏漏，差错；小纸条；滑，滑倒；滑动；衬裙；（击球员后侧的）守场员；（制陶器用的）泥浆，泥釉；（飞机飞行中的）侧滑；牵狗皮带；（两个码头之间）泊位；（编织）挑针；变糟，下跌；接枝",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "caution slippery when wet 小心地面湿滑"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3866
+  },
+  {
+   "word": "slipper",
+   "phonetic": "/ˈslɪpər/",
+   "phonetic_uk": "/ˈslɪpə(r)/",
+   "meaning": "n. 室内便鞋，拖鞋；轻便舞鞋 v. 用拖鞋打（人）",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "死累破-->拖鞋"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3867
+  },
+  {
+   "word": "pink slip",
+   "phonetic": "/ˈpɪŋk slɪp/",
+   "phonetic_uk": "/ˈpɪŋk slɪp/",
+   "meaning": "n. 解雇通知书，解聘通知；",
+   "hints": [],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3868
   },
   {
    "id": 595,
@@ -21759,11 +21936,39 @@
    "phonetic_src": "dict"
   },
   {
+   "word": "lease",
+   "phonetic": "/liːs/",
+   "phonetic_uk": "/liːs/",
+   "meaning": "n. 租约，租契 v. 出租，租用",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "租约（lease）里要求这个场地的租期最少（least）是一年"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3869
+  },
+  {
    "id": 597,
    "word": "release",
    "phonetic": "/rɪˈliːs/",
-   "meaning": "publiclty “发布、发亵相关",
-   "hints": [],
+   "meaning": "v. 释放，放走；放开，松开；公布，发布；发行，上映；发泄，宣泄；排放（物质）；免除，解雇；放弃，让予；放松，使松弛 n. 释放，获释；排放，泄漏；释放装置；表达，宣泄；解脱，轻松感；新发行的东西；发表，发布；（责任等的）免除；<法律> 放弃，让予；<美> 传球；（设备的）松开",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "阿姨立刻死-->公开发布，发行"
+    }
+   ],
    "example_en": "",
    "example_zh": "",
    "derivatives": [],
@@ -21780,90 +21985,46 @@
    "page": 102,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "调以群记抓核",
    "suspect": "",
    "phonetic_uk": "/rɪˈliːs/",
    "phonetic_src": "dict"
   },
   {
-   "id": 598,
-   "word": "bulletin",
-   "phonetic": "/ˈbʊlətɪn/",
-   "meaning": "n.租约，租契v.出租，租用",
+   "word": "publicity",
+   "phonetic": "/pʌbˈlɪsəti/",
+   "phonetic_uk": "/pʌbˈlɪsəti/",
+   "meaning": "n. 关注，报道；宣传， 推广；宣传业，广告行业；宣传品，广告；引起公众关注的事物",
    "hints": [
     {
-     "type": "形近对照",
-     "text": "租约(lease)里要求这个场地的租赁年限最少(least)是一年。"
+     "type": "联想",
+     "text": "public（公开的）+ity（具备某种性质）-->公开宣布"
     }
    ],
-   "example_en": "out to people to make that happen We lease all our computer equipment v52 “ ｛private publish •",
-   "example_zh": "我自己负担不起每月的抵押贷款，所以我不得不把房间出租给别人来实现这一目标。我们所有的计算机设备都是租来的。发布、发表”相关形近 -(punish",
-   "derivatives": [
-    "rental /'rentl/ n. 租金；出租"
-   ],
-   "synonyms": "",
-   "phrases": [
-    "rental environment 租赁环境"
-   ],
-   "compare": "",
-   "notes": [],
-   "no": null,
-   "group": "租房”相关",
-   "related": [
-    "tenant",
-    "“租庞”相关"
-   ],
-   "page": 102,
-   "unit": 4,
-   "lesson": 14,
-   "part": "1",
-   "part_title": "调以群记抓核",
-   "suspect": "",
-   "phonetic_uk": "/ˈbʊlətɪn/",
-   "phonetic_src": "dict"
-  },
-  {
-   "id": 599,
-   "word": "phenomenon",
-   "phonetic": "/fəˈnɑːmɪnən/",
-   "meaning": "v.释放；放开；发表；发行；发泄n.释放；公开；发行；发布；排放；解脱也：rC(向姨)+ leasc(发音类似“勒死”)阿姨快被勤死了，快点把她“放开\"啊n.关注；宣传；报道",
-   "hints": [
-    {
-     "type": "词根词缀",
-     "text": "public(公开的)+ity(具备某种性质)一公开；宣传。"
-    }
-   ],
-   "example_en": "Therefore, unless customers are prepared to sign release agreements,the use of Al may become somewhat restricted in the future publicity /pab lsati Taking part in the event will be good publicity for our school",
-   "example_zh": "因此，除非客户愿意签署公开协议，否则未来人工智能的使用可能会受到一定程度的限制。参与这项活动对我们学校将是很好的宣传。",
+   "example_en": "",
+   "example_zh": "",
    "derivatives": [],
    "synonyms": "",
-   "phrases": [
-    "ssue 形近 tissue"
-   ],
+   "phrases": [],
    "compare": "",
    "notes": [],
-   "no": null,
-   "group": "租房”相关",
-   "related": [
-    "tenant",
-    "“租庞”相关"
-   ],
-   "page": 102,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
-   "part_title": "调以群记抓核",
-   "suspect": "",
-   "phonetic_uk": "/fəˈnɒmɪnən/",
-   "phonetic_src": "dict"
+   "part": 1,
+   "id": 3870
   },
   {
    "id": 600,
    "word": "bulletin",
    "phonetic": "/ˈbʊlətɪn/",
    "meaning": "n.公告，布告；简报",
-   "hints": [],
+   "hints": [
+    {
+     "type": "联想",
+     "text": "布了-->公布了"
+    }
+   ],
    "example_en": "bulletin later this week",
    "example_zh": "本周晚些时候政府将发 The government will issue an official布一则官方公报。",
    "derivatives": [],
@@ -21880,7 +22041,7 @@
    "page": 103,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓樓心",
    "suspect": "",
    "phonetic_uk": "/ˈbʊlətɪn/",
@@ -21921,15 +22082,11 @@
    "id": 602,
    "word": "private",
    "phonetic": "/ˈpraɪvət/",
-   "meaning": "adj. 私人的，私密的v.处罚，惩罚諧音：发音类似“怕你失(建失自己)”，回力92 怕你選失自己，所以你奶妈委戶格管教你，你做了错事要惩罚你一您罚n.问题；话题；发行；期号v．宣布；公布；发出；些版；发行n.纸巾，手巾纸；组织n. 现象；非凡的人",
+   "meaning": "adj. 私人的，私密的v.处罚，惩罚",
    "hints": [
     {
      "type": "联想",
      "text": "Pr(联想成“仆人”)+iv(联想成罗马数字N“四”)+ate(吃)-~四个仆人吃，那肯定是私下偷偷地吃啊-~私密的。"
-    },
-    {
-     "type": "联想",
-     "text": "掏出口袋里的纸巾看一下，上面会有个英文单词 tissue。"
     }
    ],
    "example_en": "My parents used to punish me by not letting me watch TV punishment /'pAn/ment/n issue u Discussing the issue in private will makc the powerful person feelslegs threatened tissue ''oju： Unit 4 Often, the human immune system attacks the foreign tissue phenomenon /fo'nominon But this phenomenon tends to be most acutely felt during economic downturs and fragile recoveries",
@@ -21953,11 +22110,103 @@
    "page": 103,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓樓心",
    "suspect": "词义过长",
    "phonetic_uk": "/ˈpraɪvət/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "punish",
+   "phonetic": "/ˈpʌnɪʃ/",
+   "phonetic_uk": "/ˈpʌnɪʃ/",
+   "meaning": "v. 处罚，惩罚（做错事或犯法的人）；惩处（犯罪行为）；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "“怕你失”去自己的方向，所以要惩罚处罚你-->处罚惩罚"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3871
+  },
+  {
+   "word": "issue",
+   "phonetic": "/ˈɪʃuː/",
+   "phonetic_uk": "/ˈɪʃuː/",
+   "meaning": "n. 问题；话题；发行 v.宣布；公布；发出；出版；发行",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "《一休》出版了，有很多问题-->出版，问题"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3872
+  },
+  {
+   "word": "tissue",
+   "phonetic": "/ˈtɪʃuː/",
+   "phonetic_uk": "/ˈtɪʃuː/",
+   "meaning": "n. 纸巾，面巾纸；（动物或植物的细胞）组织；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "掏出口袋里的纸巾看一下，上面会有个英文单词 tissue。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3873
+  },
+  {
+   "word": "phenomenon",
+   "phonetic": "/fəˈnɑːmɪnən/",
+   "phonetic_uk": "/fəˈnɒmɪnən/",
+   "meaning": "n. 现象；杰出的人，非凡的人（或事物）；（哲学）现象",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "飞着的拉面，这是一种奇异现象"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3874
   },
   {
    "id": 603,
@@ -21966,8 +22215,8 @@
    "meaning": "adj. 使人印象深的；杰出的；明亮的；鲜艳的；聪",
    "hints": [
     {
-     "type": "词根词",
-     "text": "级；brilli(发光)+ant(形容词后缀)一发光的一杰出的；明亮的。"
+     "type": "联想",
+     "text": "bril(发光)+lian(形容词后缀)+t(他)----他一脸的光---->杰出的；明亮的。"
     }
    ],
    "example_en": "He is a brilliant young man",
@@ -21990,7 +22239,7 @@
    "page": 104,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓樓心",
    "suspect": "",
    "phonetic_uk": "/ˈbrɪliənt/",
@@ -22004,7 +22253,7 @@
    "hints": [
     {
      "type": "形近对照",
-     "text": "他觉得这个想法是极好的Y2 (terrific)，我觉得这个想法是很可怕的terrible)。"
+     "text": "他觉得这个想法是极好的 (terrific)，我觉得这个想法是很可怕的(terrible)。"
     }
    ],
    "example_en": "S I feel absolutely terrific today！",
@@ -22025,7 +22274,7 @@
    "page": 104,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓樓心",
    "suspect": "",
    "phonetic_uk": "/təˈrɪfɪk/",
@@ -22039,7 +22288,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "ma(妈妈)+g(哥哥)+ni(你)+ficent(发音类似“飞身”)一你，哥哥和妈妈身体都飞起来了，这场面很壮观一壮丽的。"
+     "text": "ma(妈妈)+g(哥哥)+ni(你)+ficent(发音类似“飞升”)一你，哥哥和妈妈身体都飞起来了，这场面很壮观一壮丽的。"
     }
    ],
    "example_en": "Does that mean the writing is on the wall for all European royals, with their magnificent uniforms and majestic lifestyles？ Q grand, majestic",
@@ -22060,94 +22309,141 @@
    "page": 104,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓樓心",
    "suspect": "",
    "phonetic_uk": "/mæɡˈnɪfɪs(ə)nt/",
    "phonetic_src": "dict"
   },
   {
-   "id": 606,
-   "word": "outstanding",
-   "phonetic": "/aʊtˈstændɪŋ/",
-   "meaning": "(exceptlonal)",
-   "hints": [],
-   "example_en": "",
-   "example_zh": "",
-   "derivatives": [],
-   "synonyms": "",
-   "phrases": [
-    "remark 近义 comimel",
-    "remarkable 問櫃-"
-   ],
-   "compare": "",
-   "notes": [],
-   "no": null,
-   "group": "崛好、优秀”邮X",
-   "related": [
-    "（brilliant）",
-    "（enlnent）",
-    "terrihc",
-    "（prominent）"
-   ],
-   "page": 104,
-   "unit": 4,
-   "lesson": 14,
-   "part": "1",
-   "part_title": "词以群记抓樓心",
-   "suspect": "词头待校对;词头已自动修正",
-   "phonetic_uk": "/aʊtˈstændɪŋ/",
-   "phonetic_src": "dict"
-  },
-  {
-   "id": 607,
-   "word": "remarkably",
-   "phonetic": "/rɪˈmɑːrkəbli/",
-   "meaning": "adj，绝妙的；极好的；很大的；巨大的v.编造；捏造；制造n.织物；布料；结构 ©：adj．极好的；非凡的",
+   "word": "magnify",
+   "phonetic": "/ˈmæɡnɪfaɪ/",
+   "phonetic_uk": "/ˈmæɡnɪfaɪ/",
+   "meaning": "v. 放大，扩大；夸张，增强；",
    "hints": [
     {
      "type": "联想",
-     "text": "mag(妈妈和哥哥)+ni(你)+fy(9 一你妈妈和哥哥飞了一怎么可能？别“本张”了，别“放大”事实。"
-    },
-    {
-     "type": "联想",
-     "text": "fabu(发布)+lous(乐死)一我的书终于正式发布了，这对我来说是极好的一-极好的。"
-    },
-    {
-     "type": "联想",
-     "text": "发布(tab)日(ni)尅他(cate)一在发布会那天打他一怎么可能？别胡编乱造一编造。"
+     "text": "妈妈哥哥你fy（放大）"
     }
    ],
-   "example_en": "appreciate all the fine detail fabulous /fabjolas The second half of the 20th century saw a collection of geniuses, warriors, entrepreneurs and visionaries labour to create a fabulou machine.20 fabricate /fabrikerr M The evidence was totally fabricated Tabrication / fabri'keu/n/n fabric /febrk We will have to wait and see exazty marvellous( It's marvellous what modern technology can do",
-   "example_zh": "者 You really need a magnifying glass to你需要放大镜才能欣赏到一切细微之处。世纪下半叶，一群天才、勇士、企业家和有远见的人努力创造了一台令人难以置信的机器。这个证据纯属伪造。虚构的信息，捏造的故事如何重塑我们的社会结构。美 marvelous) /'mavts现代技术所能做的真是太了不起了。",
+   "example_en": "",
+   "example_zh": "",
    "derivatives": [],
    "synonyms": "",
    "phrases": [],
    "compare": "",
    "notes": [],
-   "no": null,
-   "group": "崛好、优秀”邮X",
-   "related": [
-    "（brilliant）",
-    "（enlnent）",
-    "terrihc",
-    "（prominent）"
-   ],
-   "page": 104,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
-   "part_title": "词以群记抓樓心",
-   "suspect": "",
-   "phonetic_uk": "/rɪˈmɑːkəbli/",
-   "phonetic_src": "dict"
+   "part": 1,
+   "id": 3875
+  },
+  {
+   "word": "fabulous",
+   "phonetic": "/ˈfæbjələs/",
+   "phonetic_uk": "/ˈfæbjələs/",
+   "meaning": "adj. 极好的，绝妙的；非凡的，巨大的，惊人的；虚构的，传说的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "fabu（发布）+l（乐）+ous（形容词后缀）--发布了考研英语你还在背单词吗，赚了100w-->极好的"
+    },
+    {
+     "type": "记忆",
+     "text": "王者荣耀完美团战输出100%。fabulous！！！"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3876
+  },
+  {
+   "word": "fabricate",
+   "phonetic": "/ˈfæbrɪkeɪt/",
+   "phonetic_uk": "/ˈfæbrɪkeɪt/",
+   "meaning": "v. 制造，生产；捏造，编造；组装，装配",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "发布日kei他-->没有人在发布日kei他-->编造，捏造"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3877
+  },
+  {
+   "word": "fabric",
+   "phonetic": "/ˈfæbrɪk/",
+   "phonetic_uk": "/ˈfæbrɪk/",
+   "meaning": "n. 布料，织物；构造，结构；",
+   "hints": [],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3878
+  },
+  {
+   "word": "marvelous",
+   "phonetic": "/ˈmɑːrvələs/",
+   "phonetic_uk": "/ˈmɑːvələs/",
+   "meaning": "adj. 了不起的，极好的；非凡的，令人惊异的，不平常的；（较罕见、书面）奇迹般的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "王者播报承伤百分之80。marvelous！"
+    },
+    {
+     "type": "联想",
+     "text": "妈我乐死"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3879
   },
   {
    "id": 608,
    "word": "marvel",
    "phonetic": "/ˈmɑːrv(ə)l/",
-   "meaning": "奇迹v，感到惊奇；大为赞叹",
-   "hints": [],
+   "meaning": "n.奇迹  v.感到惊奇；大为赞叹",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "captain Marvel-->惊奇队长--->奇迹"
+    }
+   ],
    "example_en": "• Take a moment or two to wonder at those maneis",
    "example_zh": "花些时间想想那些奇迹。",
    "derivatives": [],
@@ -22166,7 +22462,7 @@
    "page": 105,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ˈmɑːv(ə)l/",
@@ -22179,12 +22475,8 @@
    "meaning": "adj. 韭凡的，不平常的；令人惊奇的adj. 杰出的，有名的",
    "hints": [
     {
-     "type": "词根词",
-     "text": "级：超出(extra)一般的(ordinary)，那就是“非凡的，不平常的”。"
-    },
-    {
-     "type": "联想",
-     "text": "e(出)+min(联想成“名”+ent(形容词后缀)一-有名的，杰出的。"
+     "type": "词根词缀",
+     "text": "超出(extra)一般的(ordinary)，那就是“非凡的，不平常的”。=very"
     }
    ],
    "example_en": "She was a truly extraordinary woman eminent feminont/ ⑤ His description even fits the majority of eminent scholars",
@@ -22205,11 +22497,34 @@
    "page": 105,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ɪkˈstrɔːd(ə)n(ə)ri/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "eminent",
+   "phonetic": "/ˈemɪnənt/",
+   "phonetic_uk": "/ˈemɪnənt/",
+   "meaning": "adj. （在某领域或职业中）卓越的，出众的；突出的，明显的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "e(出)+min(联想成“名”+ent(形容词后缀)---有名的，杰出的。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3880
   },
   {
    "id": 610,
@@ -22219,7 +22534,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "pro(前)+ minent(联想成 eminent2“杰出的”)一排在杰出的人前面的，那是非常优秀的一突出的，卓越的。"
+     "text": "pro(前)+ minent(联想成 eminent“杰出的”)一排在杰出的人前面的，那是非常优秀的一突出的，卓越的。"
     }
    ],
    "example_en": "It is also less prominent in many social studies courses",
@@ -22240,7 +22555,7 @@
    "page": 105,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ˈprɒmɪnənt/",
@@ -22286,20 +22601,7 @@
    "word": "exception",
    "phonetic": "/ɪkˈsepʃn/",
    "meaning": "n.例外；异议，反时adj.例外的，特殊的；优异的，非凡的n.评论，话语v.谈论，评论；注意，观察adj. 明显的，值得注意的，卓越的adv. 不同寻常地；值得注意地n.评论，意见v.发表意见，做出评论",
-   "hints": [
-    {
-     "type": "词根词",
-     "text": "级：re(重复)+mark(标记)一重复2 地做标记，就是在“评论、谈论”"
-    },
-    {
-     "type": "词根词",
-     "text": "级：remark(评论)+able(形容词后缀)一一再地评论，证明这件事儿很值得注意一值得注意的。"
-    },
-    {
-     "type": "联想",
-     "text": "所有的(com)人(mcn)都评价他(t) 一一评论，发表意见。"
-    }
-   ],
+   "hints": [],
    "example_en": "with a fcw aeeplinns. the sotgwruing i This deadline will be extended only in exceptional circumstances remark n mak Hardly had John finished his introductory remark when he was interrupted by the audience remarkable ri makobl One of the remarkable findings of the study was that the similar genes seem to be evolving faster than other genes remarkably /r'ma:kabli At its best, the European project is remarkably liberal comment /'koment I could not help commenting upon it",
    "example_zh": "只有在特味情况下才会延长最后期限。约翰刚说完开场白就被听众打断了这项研究的一个显著发现是，相似的基因似乎比其他基因进化得更快。在最佳情况下，这一欧洲项日(欧盟计划)是非常自由的。不考研英语你还在背单词吗",
    "derivatives": [],
@@ -22320,11 +22622,103 @@
    "page": 105,
    "unit": 4,
    "lesson": 14,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "词义过长;词头待校对;词头已自动修正",
    "phonetic_uk": "/ɪkˈsepʃ(ə)n/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "remark",
+   "phonetic": "/rɪˈmɑːrk/",
+   "phonetic_uk": "/rɪˈmɑːk/",
+   "meaning": "n. 言论，评述； v. 谈论，说起；注意到",
+   "hints": [
+    {
+     "type": "词根词缀",
+     "text": "re(重复)+mark(标记)一重复2 地做标记，就是在“评论、谈论”"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3881
+  },
+  {
+   "word": "remarkable",
+   "phonetic": "/rɪˈmɑːrkəb(ə)l/",
+   "phonetic_uk": "/rɪˈmɑːkəb(ə)l/",
+   "meaning": "adj. 引人注目的，非凡的",
+   "hints": [
+    {
+     "type": "词根词",
+     "text": "级：remark(评论)+able(形容词后缀)一一再地评论，证明这件事儿很值得注意一值得注意的。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3882
+  },
+  {
+   "word": "remarkably",
+   "phonetic": "/rɪˈmɑːrkəbli/",
+   "phonetic_uk": "/rɪˈmɑːkəbli/",
+   "meaning": "adv. 不寻常地，惊人地；不平常地，奇怪地",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "=very"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3883
+  },
+  {
+   "word": "comment",
+   "phonetic": "/ˈkɑːment/",
+   "phonetic_uk": "/ˈkɒment/",
+   "meaning": "n. 评论，意见；批评，指责；说明，写照；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "所有的(com)人(men)都评价他(t) 一一评论，发表意见。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 14,
+   "part": 1,
+   "id": 3884
   },
   {
    "id": 613,
