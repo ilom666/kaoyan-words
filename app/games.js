@@ -239,6 +239,11 @@
             <span class="game-card-name">听音辨词</span>
             <span class="game-card-desc">听发音，选出正确的单词</span>
           </button>
+          <button class="game-card" data-act="open-reading">
+            <span class="game-card-ico">🤖</span>
+            <span class="game-card-name">AI 阅读理解</span>
+            <span class="game-card-desc">用已学单词生成短文和题目</span>
+          </button>
         </div>
 
         <div class="game-config">
@@ -265,6 +270,7 @@
             </div>
           </div>
         </div>
+
 
         <div class="game-menu-foot">
           <span class="game-best">🏆 本模式最高分：<b>${best}</b></span>
@@ -371,11 +377,8 @@
     if (!btn) return;
     const act = btn.dataset.act;
     const val = btn.dataset.val;
-    if (act === 'game') {
-      G.game = val;
-      if (val === 'listen') renderMenu();
-      else { document.getElementById('game-dir-row').hidden = false; renderMenu(); }
-    } else if (act === 'scope') { G.scope = val; renderMenu(); }
+    if (act === 'game') { G.game = val; G.phase = 'menu'; renderMenu(); }
+    else if (act === 'scope') { G.scope = val; renderMenu(); }
     else if (act === 'direction') { G.direction = val; renderMenu(); }
     else if (act === 'total') { G.total = +val; renderMenu(); }
     else if (act === 'perq') { G.perQ = +val; renderMenu(); }
@@ -384,6 +387,7 @@
     else if (act === 'replay') { speakCurrent(); }
     else if (act === 'say') { D.speak(btn.dataset.word); }
     else if (act === 'menu') { G.phase = 'menu'; renderMenu(); }
+    else if (act === 'open-reading') { D.openReading(); }
   }
 
   function onKey(e) {

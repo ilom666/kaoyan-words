@@ -7,8 +7,10 @@
   POST /api/add     新增词条          body: {词条对象}
   POST /api/delete  删除词条          body: {"id": 3}
   POST /api/reset   恢复上次备份
+  POST /api/ai/reading  用已学单词生成阅读理解(DeepSeek 代理)
+                     body: {"topic","length","questionCount","words":[...],"apiKey"}
 """
-import json, os, re, shutil, sys
+import json, os, re, shutil, sys, urllib.error
 import urllib.request, urllib.parse
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -18,6 +20,11 @@ APP_DIR = os.path.join(ROOT, 'app')
 DATA_FILE = os.path.join(ROOT, 'data', 'words.json')
 BACKUP_FILE = os.path.join(ROOT, 'data', 'words.backup.json')
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
+# DeepSeek 配置：密钥只从环境变量或单次请求体读取，不写入任何文件
+DEEPSEEK_URL = os.environ.get('DEEPSEEK_API_BASE', 'https://api.deepseek.com/chat/completions')
+DEEPSEEK_MODEL = os.environ.get('DEEPSEEK_MODEL', 'deepseek-chat')
+DEEPSEEK_TIMEOUT = 90
+MAX_AI_WORDS = 300
 
 
 def load_data():
@@ -75,6 +82,160 @@ def youdao_lookup(word):
     }
 
 
+def _ai_error(e):
+    """把 DeepSeek/网络异常转成对用户友好的中文提示"""
+    if isinstance(e, urllib.error.HTTPError):
+        detail = ''
+        try:
+            d = json.loads(e.read().decode('utf-8'))
+            detail = str((d.get('error') or {}).get('message') or '').strip()[:180]
+        except Exception:
+            pass
+        if e.code in (401, 403):
+            return 'DeepSeek API Key 无效或已过期，请检查后重试。'
+        if e.code == 429:
+            return '请求过于频繁或账户余额不足，请稍后再试。' + ('（' + detail + '）' if detail else '')
+        return f'DeepSeek 返回错误 {e.code}。' + ('（' + detail + '）' if detail else '')
+    if isinstance(e, TimeoutError):
+        return '请求 DeepSeek 超时，请稍后重试。'
+    if isinstance(e, urllib.error.URLError):
+        return '无法连接 DeepSeek，请检查本机网络。' + (str(getattr(e, 'reason', ''))[:120])
+    return '生成失败：' + str(e)[:200]
+
+
+def deepseek_reading(body):
+    """用已学单词让 DeepSeek 生成一篇阅读理解，返回结构化 JSON。"""
+    api_key = str(body.get('apiKey') or '').strip() or os.environ.get('DEEPSEEK_API_KEY', '').strip()
+    if not api_key:
+        return {'ok': False, 'error': '未配置 DeepSeek API Key。可在下方「DeepSeek API Key」处填写，或在启动服务前设置环境变量 DEEPSEEK_API_KEY。'}
+
+    topic = str(body.get('topic') or '').strip()[:120] or '校园生活'
+    word_count = {'short': 150, 'medium': 220, 'long': 320}.get(body.get('length'), 220)
+    try:
+        q_count = min(max(int(body.get('questionCount') or 3), 1), 5)
+    except (TypeError, ValueError):
+        q_count = 3
+    raw_words = body.get('words')
+    words = []
+    if isinstance(raw_words, list):
+        for w in raw_words[:MAX_AI_WORDS]:
+            if isinstance(w, dict):
+                spelling = str(w.get('word') or '').strip()
+                if spelling:
+                    words.append({'word': spelling[:60], 'meaning': str(w.get('meaning') or '').strip()[:40]})
+    if len(words) < 5:
+        return {'ok': False, 'error': '已学单词太少（至少需要 5 个），先去刷几个词再来生成吧。'}
+
+    vocab = '\n'.join(f"- {w['word']}: {w['meaning'] or '（无释义）'}" for w in words)
+    system = (
+        '你是一位考研英语教师。请写一篇英文阅读理解，并据此出题。'
+        '只输出一个 JSON 对象，不要 Markdown 代码块，不要任何额外说明。'
+        'JSON 结构：{"title":"英文标题",'
+        '"paragraphs":[{"en":"英文段落原文","zh":"该段中文翻译"}],'
+        '"article":"英文正文（各段原文按顺序合并）","translation":"中文全文翻译（各段翻译按顺序合并）",'
+        '"used_words":["文章中实际出现的已学单词"],"questions":[{"question":"英文题干",'
+        '"question_zh":"中文题干","options":["A. ...","B. ...","C. ...","D. ..."],'
+        '"answer":0,"explain":"中文解析"}]}。'
+        f'要求：正文约 {word_count} 词，分成 3~6 个自然段，难度贴近考研英语；主题为「{topic}」；'
+        'paragraphs 里每个 en/zh 必须一一对应，zh 是该段 en 的准确中文翻译，不要漏段；'
+        'article 与 paragraphs 的 en 保持一致，translation 与 paragraphs 的 zh 保持一致；'
+        '尽量自然地使用下面「已学单词表」中的单词（至少 12 个），可按需使用其时态/单复数等变形，不要生硬堆砌；'
+        f'出 {q_count} 道四选一理解题，answer 为正确选项在 options 中的下标（0~3）；'
+        'used_words 只列正文里真正用到的词表单词（小写原形）；translation、question_zh 与 explain 用中文。'
+    )
+    user = '已学单词表：\n' + vocab + '\n\n请按上述 JSON 结构输出。'
+    payload = {
+        'model': DEEPSEEK_MODEL,
+        'messages': [
+            {'role': 'system', 'content': system},
+            {'role': 'user', 'content': user},
+        ],
+        'response_format': {'type': 'json_object'},
+        'temperature': 0.85,
+        'max_tokens': 3200,
+    }
+    req = urllib.request.Request(
+        DEEPSEEK_URL,
+        data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+        headers={
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + api_key,
+            'User-Agent': 'shuacidan-local/1.0',
+        },
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=DEEPSEEK_TIMEOUT) as resp:
+            result = json.loads(resp.read().decode('utf-8'))
+        choices = result.get('choices') or [{}]
+        msg = choices[0].get('message') or {}
+        content = str(msg.get('content') or '').strip()
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError, IndexError, TypeError) as e:
+        return {'ok': False, 'error': _ai_error(e)}
+    if content.startswith('```'):
+        content = re.sub(r'^```(?:json)?\s*', '', content)
+        content = re.sub(r'\s*```$', '', content)
+    try:
+        data = json.loads(content)
+    except ValueError:
+        return {'ok': False, 'error': 'AI 返回内容格式异常，请再试一次。'}
+
+    questions = []
+    for q in (data.get('questions') or [])[:q_count]:
+        if not isinstance(q, dict):
+            continue
+        opts = [str(x).strip() for x in (q.get('options') or []) if str(x).strip()][:4]
+        if len(opts) < 2:
+            continue
+        try:
+            ans = int(q.get('answer', 0))
+        except (TypeError, ValueError):
+            ans = 0
+        if ans < 0 or ans >= len(opts):
+            ans = 0
+        questions.append({
+            'question': str(q.get('question') or '').strip()[:300],
+            'question_zh': str(q.get('question_zh') or '').strip()[:300],
+            'options': opts,
+            'answer': ans,
+            'explain': str(q.get('explain') or '').strip()[:600],
+        })
+    article = str(data.get('article') or '').strip()
+    translation = str(data.get('translation') or '').strip()
+    if not article or not questions:
+        return {'ok': False, 'error': 'AI 返回内容不完整，请重试一次。'}
+
+    paras = []
+    raw_paras = data.get('paragraphs')
+    if isinstance(raw_paras, list):
+        for p in raw_paras:
+            if not isinstance(p, dict):
+                continue
+            en = str(p.get('en') or '').strip()
+            if en:
+                paras.append({'en': en, 'zh': str(p.get('zh') or '').strip()})
+    if not paras:
+        ens = [b.strip() for b in re.split(r'\n\s*\n', article) if b.strip()]
+        zhs = [b.strip() for b in re.split(r'\n\s*\n', translation) if b.strip()]
+        paras = [{'en': en, 'zh': zhs[i] if i < len(zhs) else ''} for i, en in enumerate(ens)]
+
+    used = []
+    for w in (data.get('used_words') or []):
+        s = str(w).strip().lower()[:60]
+        if s and s not in used:
+            used.append(s)
+    return {
+        'ok': True,
+        'title': str(data.get('title') or '阅读理解').strip()[:120],
+        'article': article,
+        'translation': translation,
+        'paragraphs': paras,
+        'used_words': used[:40],
+        'questions': questions,
+        'vocab_size': len(words),
+    }
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=APP_DIR, **kwargs)
@@ -125,6 +286,12 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
+        if path == '/api/ai/reading':
+            try:
+                self._json(deepseek_reading(self._body()))
+            except Exception as e:
+                self._json({'ok': False, 'error': str(e)[:200]}, 500)
+            return
         try:
             data = load_data()
             words = data.get('words', [])
