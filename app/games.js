@@ -260,10 +260,14 @@
             </div>
           </div>
           <div class="game-config-row">
-            <span class="game-config-label">题数 / 限时</span>
+            <span class="game-config-label">题数 / 限时（可自行填写，默认 10 题 × 10 秒）</span>
+            <div class="game-num-row">
+              <label class="game-num">题数 <input id="game-total" class="ai-input" type="number" min="1" max="100" step="1" value="${G.total}"></label>
+              <label class="game-num">每题限时(秒) <input id="game-perq" class="ai-input" type="number" min="3" max="120" step="1" value="${G.perQ}"></label>
+            </div>
             <div class="seg" id="game-opts">
-              ${[10, 20].map(n => `<button class="seg-btn ${G.total === n ? 'on' : ''}" data-act="total" data-val="${n}">${n} 题</button>`).join('')}
-              ${[8, 15].map(s => `<button class="seg-btn ${G.perQ === s ? 'on' : ''}" data-act="perq" data-val="${s}">每题 ${s}s</button>`).join('')}
+              ${[10, 20, 30].map(n => `<button class="seg-btn" data-act="total" data-val="${n}">${n} 题</button>`).join('')}
+              ${[5, 10, 15, 20].map(s => `<button class="seg-btn" data-act="perq" data-val="${s}">每题 ${s}s</button>`).join('')}
             </div>
           </div>
         </div>
@@ -328,7 +332,7 @@
     tip.className = 'game-feedback ' + (ok ? 'ok' : 'bad');
     tip.innerHTML = ok
       ? `✅ 答对了！+${gain}${G.combo > 1 ? ` · ${G.combo} 连击` : ''}`
-      : `❌ 正确答案：${E(q.options[q.answer])} <span class="game-fb-word">${E(q.word.word)}</span>`;
+      : `❌ 真菜！正确答案：${E(q.options[q.answer])} <span class="game-fb-word">${E(q.word.word)}</span>`;
     stopTimer();
   }
 
@@ -350,7 +354,7 @@
         <div class="game-result">
           <div class="game-grade grade-${grade}">${grade}</div>
           <div class="game-result-main">
-            <h2>本局结束</h2>
+            <h2>本局结束${G.wrongList.length ? '，你个菜🐶' : ''}</h2>
             <div class="game-result-stats">
               <div><b>${G.score}</b><span>得分</span></div>
               <div><b>${acc}%</b><span>正确率</span></div>
@@ -377,9 +381,27 @@
     if (act === 'game') { G.game = val; G.phase = 'menu'; renderMenu(); }
     else if (act === 'scope') { G.scope = val; renderMenu(); }
     else if (act === 'direction') { G.direction = val; renderMenu(); }
-    else if (act === 'total') { G.total = +val; renderMenu(); }
-    else if (act === 'perq') { G.perQ = +val; renderMenu(); }
-    else if (act === 'start') { if (G._advTimer) { clearTimeout(G._advTimer); G._advTimer = null; } start(); }
+    else if (act === 'total') {
+      G.total = +val;
+      const el = document.getElementById('game-total');
+      if (el) el.value = val;
+    }
+    else if (act === 'perq') {
+      G.perQ = +val;
+      const el = document.getElementById('game-perq');
+      if (el) el.value = val;
+    }
+    else if (act === 'start') {
+      const tEl = document.getElementById('game-total');
+      const pEl = document.getElementById('game-perq');
+      const clamp = (v, lo, hi, dft) => { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dft; };
+      G.total = clamp(tEl ? tEl.value : G.total, 1, 100, 10);
+      G.perQ = clamp(pEl ? pEl.value : G.perQ, 3, 120, 10);
+      if (tEl) tEl.value = G.total;
+      if (pEl) pEl.value = G.perQ;
+      if (G._advTimer) { clearTimeout(G._advTimer); G._advTimer = null; }
+      start();
+    }
     else if (act === 'answer') { answer(+btn.dataset.i); }
     else if (act === 'replay') { speakCurrent(); }
     else if (act === 'say') { D.speak(btn.dataset.word); }

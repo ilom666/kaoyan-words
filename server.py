@@ -42,25 +42,83 @@ def db_conn():
     return con
 
 
+# 词库结构化列: (字段名, SQL 类型) —— 数组字段用 JSON 文本列保存
+WORD_COLUMNS = [
+    ('id', 'INTEGER'), ('word', 'TEXT'), ('phonetic', 'TEXT'), ('phonetic_uk', 'TEXT'),
+    ('meaning', 'TEXT'), ('hints', 'TEXT'), ('example_en', 'TEXT'), ('example_zh', 'TEXT'),
+    ('derivatives', 'TEXT'), ('synonyms', 'TEXT'), ('phrases', 'TEXT'), ('compare', 'TEXT'),
+    ('notes', 'TEXT'), ('no', 'TEXT'), ('group', 'TEXT'), ('related', 'TEXT'),
+    ('page', 'INTEGER'), ('unit', 'INTEGER'), ('lesson', 'INTEGER'), ('part', 'BLOB'),
+    ('part_title', 'TEXT'), ('suspect', 'TEXT'), ('phonetic_src', 'TEXT'), ('meaning_src', 'TEXT'),
+]
+WORD_FIELDS = [c[0] for c in WORD_COLUMNS]
+JSON_FIELDS = {'hints', 'derivatives', 'phrases', 'notes', 'related'}
+WORD_COLS_SQL = ', '.join(f'"{name}" {typ}' for name, typ in WORD_COLUMNS)
+WORD_INSERT = f"INSERT OR REPLACE INTO words ({', '.join(chr(34)+f+chr(34) for f in WORD_FIELDS)}) VALUES ({', '.join('?' for _ in WORD_FIELDS)})"
+
+
+def word_to_row(w):
+    """词条 dict -> 结构化列值元组（尽量保真原始类型）"""
+    vals = []
+    for name in WORD_FIELDS:
+        v = w.get(name)
+        if name in JSON_FIELDS:
+            # 数组列: 列表存 JSON 文本; None 保留 NULL
+            v = json.dumps(v, ensure_ascii=False) if isinstance(v, list) else v
+        elif name == 'id':
+            v = int(v) if v not in (None, '') else 0
+        elif name in ('page', 'unit', 'lesson') and v not in (None, ''):
+            try:
+                v = int(v)
+            except (TypeError, ValueError):
+                pass
+        # 文本/数值/BLOB 列原样写入（含 None -> NULL）
+        vals.append(v)
+    return tuple(vals)
+
+
+def row_to_word(r):
+    """结构化行 -> 词条 dict，还原数组与原始类型语义"""
+    w = {}
+    for name in WORD_FIELDS:
+        v = r[name]
+        if name in JSON_FIELDS:
+            if v is None:
+                w[name] = None
+            else:
+                try:
+                    w[name] = json.loads(v)
+                except (ValueError, TypeError):
+                    w[name] = []
+        else:
+            w[name] = v
+    return w
+
+
 def init_db():
-    """建表；首次运行时把 words.json 种子导入 SQLite。"""
+    """建结构化表；从旧 JSON 列或 words.json 种子迁移。"""
     with db_conn() as con:
         con.execute('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)')
-        con.execute('CREATE TABLE IF NOT EXISTS words (id INTEGER PRIMARY KEY, data TEXT NOT NULL)')
+        con.execute(f'CREATE TABLE IF NOT EXISTS words ({WORD_COLS_SQL})')
         con.execute('CREATE TABLE IF NOT EXISTS state (id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL)')
-        n = con.execute('SELECT COUNT(*) FROM words').fetchone()[0]
-        if n == 0 and os.path.exists(SEED_FILE):
+        # 旧版兼容: words 表仍是 (id,data) 两列 -> 迁移到结构化
+        cols = [r['name'] for r in con.execute('PRAGMA table_info(words)')]
+        if cols == ['id', 'data']:
+            old = [(r['id'], json.loads(r['data'])) for r in con.execute('SELECT id,data FROM words')]
+            con.execute('DROP TABLE words')
+            con.execute(f'CREATE TABLE words ({WORD_COLS_SQL})')
+            con.executemany(WORD_INSERT, [word_to_row(dict(w, id=i)) for i, w in old])
+        elif not con.execute('SELECT COUNT(*) FROM words').fetchone()[0] and os.path.exists(SEED_FILE):
             with open(SEED_FILE, encoding='utf-8') as f:
                 seed = json.load(f)
-            con.executemany('INSERT OR REPLACE INTO words(id,data) VALUES(?,?)',
-                            [(int(w['id']), json.dumps(w, ensure_ascii=False)) for w in seed.get('words', []) if w.get('id')])
+            con.executemany(WORD_INSERT, [word_to_row(w) for w in seed.get('words', []) if w.get('id')])
             con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', seed.get('source', '')))
         con.execute('INSERT OR IGNORE INTO state(id,data) VALUES(1,?)', ('{}',))
 
 
 def load_data():
     with db_conn() as con:
-        words = [json.loads(r['data']) for r in con.execute('SELECT data FROM words ORDER BY id')]
+        words = [row_to_word(r) for r in con.execute('SELECT * FROM words ORDER BY id')]
         src = con.execute("SELECT value FROM meta WHERE key='source'").fetchone()
     return {'source': src['value'] if src else '', 'words': words}
 
@@ -68,8 +126,7 @@ def load_data():
 def save_data(data):
     with db_conn() as con:
         con.execute('DELETE FROM words')
-        con.executemany('INSERT INTO words(id,data) VALUES(?,?)',
-                        [(int(w['id']), json.dumps(w, ensure_ascii=False)) for w in data.get('words', []) if w.get('id')])
+        con.executemany(WORD_INSERT, [word_to_row(w) for w in data.get('words', []) if w.get('id')])
         con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', data.get('source', '')))
 
 
@@ -647,57 +704,69 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json({'ok': False, 'error': str(e)[:200]}, 500)
             return
         try:
-            data = load_data()
-            words = data.get('words', [])
             if path == '/api/save':
                 changes = self._body().get('changes', [])
-                idx = {w['id']: w for w in words}
-                for ch in changes:
-                    wid, patch = ch.get('id'), ch.get('patch', {})
-                    if wid in idx:
-                        for k, v in patch.items():
-                            if k == 'id':
-                                continue
-                            idx[wid][k] = v
-                save_data(data)
+                with db_conn() as con:
+                    for ch in changes:
+                        wid, patch = ch.get('id'), ch.get('patch', {})
+                        patch = {k: v for k, v in patch.items() if k in WORD_FIELDS and k != 'id'}
+                        if not patch or wid is None:
+                            continue
+                        sets = ', '.join(f'"{k}"=?' for k in patch)
+                        vals = []
+                        for k in patch:
+                            v = patch[k]
+                            if k in JSON_FIELDS:
+                                v = json.dumps(v if isinstance(v, list) else [], ensure_ascii=False)
+                            vals.append(v)
+                        con.execute(f'UPDATE words SET {sets} WHERE id=?', vals + [wid])
                 self._json({'ok': True, 'saved': len(changes)})
             elif path == '/api/add':
                 w = self._body()
-                after = w.get('after')  # 插入到该 id 之后(保持排序)
-                w = {k: w.get(k, '') for k in
-                     ('word', 'phonetic', 'phonetic_uk', 'meaning', 'hints', 'example_en', 'example_zh',
-                      'derivatives', 'synonyms', 'phrases', 'compare', 'notes', 'unit', 'lesson', 'part')}
-                w['hints'] = w.get('hints') or []
-                w['derivatives'] = w.get('derivatives') or []
-                w['phrases'] = w.get('phrases') or []
-                w['notes'] = w.get('notes') or []
-                new_id = max((x['id'] for x in words), default=0) + 1
-                w['id'] = new_id
-                if after:
-                    pos = next((i for i, x in enumerate(words) if x['id'] == after), None)
-                    if pos is not None:
-                        words.insert(pos + 1, w)
+                after = w.get('after')
+                with db_conn() as con:
+                    new_id = con.execute('SELECT COALESCE(MAX(id),0)+1 FROM words').fetchone()[0]
+                    row = word_to_row(dict(w, id=new_id))
+                    if after:
+                        # 顺序由 id 决定: 读出全部行, 在指定位置插入后重编号写回
+                        after_id = int(after)
+                        rows = [dict(r) for r in con.execute('SELECT * FROM words ORDER BY id')]
+                        pos = next((i for i, x in enumerate(rows) if x['id'] == after_id), None)
+                        insert_at = (pos + 1) if pos is not None else len(rows)
+                        new_row = dict(zip(WORD_FIELDS, row))
+                        rows.insert(insert_at, new_row)
+                        con.execute('DELETE FROM words')
+                        for i, x in enumerate(rows, 1):
+                            x['id'] = i
+                            con.execute(WORD_INSERT, word_to_row(x))
+                        new_id = insert_at + 1
                     else:
-                        words.append(w)
-                else:
-                    words.append(w)
-                save_data(data)
+                        con.execute(WORD_INSERT, row)
                 self._json({'ok': True, 'id': new_id})
             elif path == '/api/swap':
                 body = self._body()
                 a, b = body.get('idA'), body.get('idB')
-                ia = next((i for i, x in enumerate(words) if x['id'] == a), None)
-                ib = next((i for i, x in enumerate(words) if x['id'] == b), None)
-                if ia is None or ib is None or ia == ib:
+                if a is None or b is None or a == b:
                     self._json({'ok': False, 'error': '词条不存在或相同'}, 400)
                 else:
-                    words[ia], words[ib] = words[ib], words[ia]
-                    save_data(data)
-                    self._json({'ok': True})
+                    with db_conn() as con:
+                        ra = con.execute('SELECT * FROM words WHERE id=?', (a,)).fetchone()
+                        rb = con.execute('SELECT * FROM words WHERE id=?', (b,)).fetchone()
+                        if not ra or not rb:
+                            self._json({'ok': False, 'error': '词条不存在'}, 400)
+                        else:
+                            wa = {k: ra[k] for k in WORD_FIELDS}
+                            wb = {k: rb[k] for k in WORD_FIELDS}
+                            # 交换字段内容(id 不变, 保证 ORDER BY id 的显示顺序改变)
+                            con.execute(f"UPDATE words SET {', '.join(chr(34)+k+chr(34)+'=?' for k in WORD_FIELDS if k!='id')} WHERE id=?",
+                                        [wb[k] for k in WORD_FIELDS if k != 'id'] + [a])
+                            con.execute(f"UPDATE words SET {', '.join(chr(34)+k+chr(34)+'=?' for k in WORD_FIELDS if k!='id')} WHERE id=?",
+                                        [wa[k] for k in WORD_FIELDS if k != 'id'] + [b])
+                            self._json({'ok': True})
             elif path == '/api/delete':
                 wid = self._body().get('id')
-                data['words'] = [w for w in words if w['id'] != wid]
-                save_data(data)
+                with db_conn() as con:
+                    con.execute('DELETE FROM words WHERE id=?', (wid,))
                 self._json({'ok': True})
             elif path == '/api/reset':
                 # 从首次导入种子重建词库（SQLite 下不再有 words.backup.json）

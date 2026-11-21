@@ -352,6 +352,9 @@ body.studying #app { padding-bottom: 0; }
 .game-card-desc { font-size: 12px; color: var(--ink-2); }
 .game-config { display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
 .game-config-row { display: flex; flex-direction: column; gap: 7px; }
+.game-num-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.game-num { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.game-num .ai-input { width: 76px; text-align: center; }
 .game-config-label { font-size: 13px; font-weight: 700; color: var(--ink-2); }
 .seg { display: flex; flex-wrap: wrap; gap: 8px; }
 .seg-btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); font-size: 13px; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: .14s; }
@@ -460,6 +463,9 @@ body.studying #app { padding-bottom: 0; }
 .ai-word-pop-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-weight: 800; font-size: 16px; color: var(--brand); margin-bottom: 6px; }
 .ai-word-pop-head .ai-word-src { font-size: 11px; font-weight: 500; color: var(--ink-2); }
 .ai-word-pop-body { font-size: 13px; line-height: 1.6; color: var(--ink); word-break: break-word; }
+.ai-word-ph { color: var(--ink-2); font-size: 12px; }
+.ai-word-mean { margin-top: 2px; }
+.ai-word-loc { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--line); color: var(--brand); font-size: 12px; font-weight: 600; }
 .ai-word-line { position: fixed; z-index: 119; height: 2px; width: 10px; background: var(--brand); pointer-events: none; }
 .ai-saved-item { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .ai-saved-item:last-child { border-bottom: 0; }
