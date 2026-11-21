@@ -7,9 +7,7 @@
 
   let D = null;
   const E = (s) => D.esc(s);
-  const LS_AI_KEY = 'shuacidan_ai_key';
-  const LS_AI_ARTICLES = 'shuacidan_ai_articles_v1';
-  const MAX_SAVED_ARTICLES = 50;
+  const LS_AI_KEY = 'shuacidan_ai_key';  // API Key 例外: 仅本地浏览器暂存
 
   const R = {
     phase: 'menu',        // menu | loading | result | list | error
@@ -76,17 +74,13 @@
   }
 
   function loadSavedArticles() {
-    try {
-      const arr = JSON.parse(localStorage.getItem(LS_AI_ARTICLES) || '[]');
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
+    const arr = D.getArticles();
+    return Array.isArray(arr) ? arr : [];
   }
 
   function persistArticles(list) {
-    try {
-      localStorage.setItem(LS_AI_ARTICLES, JSON.stringify(list.slice(0, MAX_SAVED_ARTICLES)));
-      return true;
-    } catch { return false; }
+    D.saveArticles(list.slice(0, 50));
+    return true;
   }
 
   function saveCurrentArticle(r) {
@@ -400,7 +394,16 @@
     const direct = words.find(w => String(w.word || '').trim().toLowerCase() === word);
     const hit = direct || words.find(w => normalizeWord(w.word) === normalizeWord(word));
     if (hit && String(hit.meaning || '').trim()) {
-      return { meaning: String(hit.meaning).trim(), phonetic: hit.phonetic_uk || hit.phonetic || '', source: '本地词库' };
+      const unit = hit.unit;
+      const lesson = hit.lesson;
+      let loc = '';
+      if (unit || lesson) loc = `${unit ? '第' + unit + '单元' : ''}${unit && lesson ? ' · ' : ''}${lesson ? '第' + lesson + '课' : ''}`;
+      return {
+        meaning: String(hit.meaning).trim(),
+        phonetic: hit.phonetic_uk || hit.phonetic || '',
+        source: '本地词库',
+        location: loc,
+      };
     }
     const j = await D.fetchYoudao(word);
     if (j && j.meaning) {
@@ -432,7 +435,9 @@
       const body = box.querySelector('.ai-word-pop-body');
       const src = box.querySelector('.ai-word-src');
       if (info) {
-        body.textContent = (info.phonetic ? info.phonetic + '  ' : '') + info.meaning;
+        body.innerHTML = (info.phonetic ? `<div class="ai-word-ph">${E(info.phonetic)}</div>` : '')
+          + `<div class="ai-word-mean">${E(info.meaning)}</div>`
+          + (info.location ? `<div class="ai-word-loc">📍 ${E(info.location)}</div>` : '');
         src.textContent = info.source;
       } else {
         body.textContent = '未找到翻译';

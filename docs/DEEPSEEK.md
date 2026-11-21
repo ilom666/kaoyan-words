@@ -33,7 +33,7 @@ $env:DEEPSEEK_API_KEY="你的Key"; python server.py
 
 进入「小游戏 → AI 阅读理解 → DeepSeek API Key（可选）」，展开后填入 Key。勾选「记住到本机浏览器」会把它存在该浏览器的 `localStorage`（键名 `shuacidan_ai_key`），下次自动带出；不勾选则只在本次页面会话使用。
 
-两种方式都可以：界面填写的 Key 优先于环境变量。Key 随请求体发到本机 `server.py`，**只用于向 DeepSeek 发起一次请求，不写入词库或任何本地文件，也不会随仓库上传**。
+两种方式都可以：界面填写的 Key 优先于环境变量。Key 随请求体发到本机 `server.py`，**只用于向 DeepSeek 发起一次请求，不写入词库、SQLite 或任何本地文件，也不会随仓库上传**。本项目其余数据（进度、文章等）都已迁到服务端 SQLite，API Key 是唯一保留在浏览器 `localStorage` 的例外。
 
 ## 三、可选环境变量
 
@@ -53,7 +53,7 @@ $env:DEEPSEEK_API_KEY="你的Key"; python server.py
   → server.py 组装 system/user prompt，附 Authorization: Bearer <Key>
   → https://api.deepseek.com/chat/completions  (response_format=json_object)
   → 解析返回 JSON，校验并规范化为 paragraphs / questions
-  → 前端渲染文章、逐段翻译、题目，并自动保存到本机 localStorage
+  → 前端渲染文章、逐段翻译、题目，并自动保存到服务端 SQLite
 ```
 
 - 服务端接口：`POST /api/ai/reading`，请求体字段：`topic`、`length`（`short|medium|long`）、`questionCount`（1~5）、`words`（`[{word, meaning}]`）、`apiKey`（可选）。
