@@ -30,6 +30,7 @@ const S = {
   currentPart: '1',     // 当前选中的 Part 标签
   queue: [], qi: 0,     // 学习队列
   studyFrom: 'home',    // 本轮刷词来源: home / list
+  studyActive: false,   // 是否有进行中的刷词会话(切换到别的菜单后仍可恢复)
   known: {},            // id -> 1 认识 / 2 不认识
   starred: {},          // id -> 1 已收藏
   listMode: 'starred',  // 列表视图: starred / unknown
@@ -134,10 +135,11 @@ async function apiDelete(id) {
 /* ---------- 视图切换 ---------- */
 function show(view) {
   $('#quick-mask').hidden = true;
-  for (const v of ['home', 'study', 'manage', 'stats', 'words', 'game']) {
+  for (const v of ['home', 'study', 'manage', 'stats', 'words', 'game', 'reading']) {
     $(`#view-${v}`).hidden = v !== view;
   }
   if (view !== 'game' && window.WordGames) WordGames.onHide();
+  if (view !== 'reading' && window.WordReading) WordReading.onHide();
   $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'study') {
     document.body.classList.add('studying');
@@ -150,6 +152,7 @@ function show(view) {
   if (view === 'stats') renderStats();
   if (view === 'words') renderWordList();
   if (view === 'game' && window.WordGames) WordGames.onShow();
+  if (view === 'reading' && window.WordReading) WordReading.onShow();
 }
 
 function syncTopbarHeight() {
@@ -481,12 +484,25 @@ function startStudy(customPool, from) {
   if (S.settings.shuffle) pool = [...pool].sort(() => Math.random() - .5);
   S.queue = pool;
   S.qi = 0;
+  S.studyActive = true;
   show('study');
   renderCard();
 }
 
 function exitStudy() {
+  S.studyActive = false;
   show(S.studyFrom === 'list' ? 'words' : 'home');
+}
+
+// 从其他菜单返回时, 回到正在进行的刷词会话而非选课页
+function resumeOrHome() {
+  if (S.studyActive && S.queue.length && S.qi < S.queue.length) {
+    show('study');
+    renderCard();
+  } else {
+    S.studyActive = false;
+    show('home');
+  }
 }
 
 function curWord() { return S.queue[S.qi]; }
@@ -995,8 +1011,12 @@ async function importJson(file) {
 
 /* ---------- 事件绑定 ---------- */
 function bind() {
-  $$('.nav-btn').forEach(b => b.onclick = () => show(b.dataset.view));
-  $('#nav-home').onclick = () => show('home');
+  $$('.nav-btn').forEach(b => b.onclick = () => {
+    // 「选课」按钮: 有进行中的刷词会话则回到该会话, 否则进入选课页
+    if (b.dataset.view === 'home') resumeOrHome();
+    else show(b.dataset.view);
+  });
+  $('#nav-home').onclick = resumeOrHome;
   $('#btn-back').onclick = exitStudy;
   $('#btn-start').onclick = () => startStudy();
 
@@ -1131,6 +1151,8 @@ function bind() {
     }
     // 小游戏页: 交给游戏模块处理(答题数字键 / Esc 退出 / E 朗读)
     if (!$('#view-game').hidden && window.WordGames && WordGames.onKey(e)) return;
+    // AI 阅读理解页: 交给阅读模块处理(Esc 返回)
+    if (!$('#view-reading').hidden && window.WordReading && WordReading.onKey(e)) return;
     if ($('#view-study').hidden) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if (e.code === 'Space') { e.preventDefault(); revealAll(); }
@@ -1202,6 +1224,16 @@ async function init() {
     getWords: () => S.words,
     getKnown: () => S.known,
     getStarred: () => S.starred,
+    openReading: () => show('reading'),
+  });
+  if (window.WordReading) WordReading.init({
+    esc,
+    toast,
+    speak,
+    fetchYoudao,
+    getWords: () => S.words,
+    getKnown: () => S.known,
+    openGame: () => show('game'),
   });
   try {
     await loadWords();

@@ -10020,7 +10020,12 @@
    "word": "persuade",
    "phonetic": "/pərˈsweɪd/",
    "meaning": "v.劝说,说服；使信服，使相信",
-   "hints": [],
+   "hints": [
+    {
+     "type": "联想",
+     "text": "per（每天）sua（碎碎念）de（的）-->说服，使相信"
+    }
+   ],
    "example_en": "",
    "example_zh": "",
    "derivatives": [],
@@ -11136,8 +11141,13 @@
    "word": "thrill",
    "phonetic": "/θrɪl/",
    "phonetic_uk": "/θrɪl/",
-   "meaning": "n. 兴奋，激动；使人兴奋的事物，令人激动的事；一阵强烈的感觉；（医）震颤；追求的快感；性快感 v. 使（某人）非常兴奋，非常激动；（情感，感觉）颤抖，振动；<文>颤动，跳动",
-   "hints": [],
+   "meaning": "n. 兴奋，激动；使人兴奋的事物，令人激动的事；一阵强烈的感觉；（医）震颤；追求的快感；性快感 v. 使（某人）非常兴奋，非常激动；（情感，感觉）颤抖，振动；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "三个人爬山-->兴奋的"
+    }
+   ],
    "example_en": "",
    "example_zh": "",
    "derivatives": [],
@@ -21428,10 +21438,6 @@
    "meaning": "n. 威胁，恐吓；构成威胁的人（或事物）；凶兆；",
    "hints": [
     {
-     "type": "谐音",
-     "text": "threat → “斯拽特”"
-    },
-    {
      "type": "联想",
      "text": "他死死拽着你，发出威胁。"
     }
@@ -21489,7 +21495,7 @@
    "word": "terror",
    "phonetic": "/ˈterər/",
    "phonetic_uk": "/ˈterə(r)/",
-   "meaning": "n. 惊恐，恐惧；引起恐怖的人（或事物）；（尤指有政治目的的）恐怖活动，恐怖主义；<非正式>讨厌鬼，捣蛋鬼（尤指小孩）",
+   "meaning": "n. 惊恐，恐惧；引起恐怖的人（或事物）；（尤指有政治目的的）恐怖活动，恐怖主义；",
    "hints": [
     {
      "type": "谐音",
@@ -21814,7 +21820,7 @@
    "word": "slip",
    "phonetic": "/slɪp/",
    "phonetic_uk": "/slɪp/",
-   "meaning": "v. 滑倒，失足；滑落，脱落；溜走，悄悄地走；偷偷塞进；滑行，打滑；下降，变差；陷入；迅速穿上，迅速脱下；摆脱，挣脱；飞逝，过得飞快；被（某人）忘记；放出（动物，尤指猎狗）；（身体部分）移位，脱臼；（编织）挑过一针不结；略微松动（汽车离合器）；（动物）流产 n. 疏漏，差错；小纸条；滑，滑倒；滑动；衬裙；（击球员后侧的）守场员；（制陶器用的）泥浆，泥釉；（飞机飞行中的）侧滑；牵狗皮带；（两个码头之间）泊位；（编织）挑针；变糟，下跌；接枝",
+   "meaning": "v. 滑倒，失足；滑落，下降，偷偷放；n.纸条",
    "hints": [
     {
      "type": "联想",
@@ -21962,7 +21968,7 @@
    "id": 597,
    "word": "release",
    "phonetic": "/rɪˈliːs/",
-   "meaning": "v. 释放，放走；放开，松开；公布，发布；发行，上映；发泄，宣泄；排放（物质）；免除，解雇；放弃，让予；放松，使松弛 n. 释放，获释；排放，泄漏；释放装置；表达，宣泄；解脱，轻松感；新发行的东西；发表，发布；（责任等的）免除；<法律> 放弃，让予；<美> 传球；（设备的）松开",
+   "meaning": "v. 释放，放走；放开，松开；公布，发布；",
    "hints": [
     {
      "type": "联想",
@@ -22212,11 +22218,11 @@
    "id": 603,
    "word": "brilliant",
    "phonetic": "/ˈbrɪliənt/",
-   "meaning": "adj. 使人印象深的；杰出的；明亮的；鲜艳的；聪",
+   "meaning": "adj. 使人印象深的；杰出的；明亮的；鲜艳的；",
    "hints": [
     {
      "type": "联想",
-     "text": "bril(发光)+lian(形容词后缀)+t(他)----他一脸的光---->杰出的；明亮的。"
+     "text": "bril(发光)+lian(脸)+t(他)----他一脸的光---->杰出的；明亮的。"
     }
    ],
    "example_en": "He is a brilliant young man",
@@ -22229,7 +22235,7 @@
    "compare": "",
    "notes": [],
    "no": null,
-   "group": "崛好、优秀”邮X",
+   "group": "崛好、优秀",
    "related": [
     "（brilliant）",
     "（enlnent）",
@@ -22253,7 +22259,7 @@
    "hints": [
     {
      "type": "形近对照",
-     "text": "他觉得这个想法是极好的 (terrific)，我觉得这个想法是很可怕的(terrible)。"
+     "text": "特日非可-->特别的日子非得不说的事--->极好的"
     }
    ],
    "example_en": "S I feel absolutely terrific today！",
@@ -22264,7 +22270,7 @@
    "compare": "",
    "notes": [],
    "no": null,
-   "group": "崛好、优秀”邮X",
+   "group": "崛好、优秀",
    "related": [
     "（brilliant）",
     "（enlnent）",
@@ -22299,7 +22305,7 @@
    "compare": "",
    "notes": [],
    "no": null,
-   "group": "崛好、优秀”邮X",
+   "group": "崛好、优秀",
    "related": [
     "（brilliant）",
     "（enlnent）",
@@ -22472,7 +22478,7 @@
    "id": 609,
    "word": "extraordinary",
    "phonetic": "/ɪkˈstrɔːrdəneri/",
-   "meaning": "adj. 韭凡的，不平常的；令人惊奇的adj. 杰出的，有名的",
+   "meaning": "adj. 非凡的，不平常的；令人惊奇的adj. 杰出的，有名的",
    "hints": [
     {
      "type": "词根词缀",
@@ -22600,8 +22606,13 @@
    "id": 612,
    "word": "exception",
    "phonetic": "/ɪkˈsepʃn/",
-   "meaning": "n.例外；异议，反时adj.例外的，特殊的；优异的，非凡的n.评论，话语v.谈论，评论；注意，观察adj. 明显的，值得注意的，卓越的adv. 不同寻常地；值得注意地n.评论，意见v.发表意见，做出评论",
-   "hints": [],
+   "meaning": "n.例外；异议，反时adj.例外的，特殊的；优异的，非凡的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "我喜欢每一个女生除了你exception for you"
+    }
+   ],
    "example_en": "with a fcw aeeplinns. the sotgwruing i This deadline will be extended only in exceptional circumstances remark n mak Hardly had John finished his introductory remark when he was interrupted by the audience remarkable ri makobl One of the remarkable findings of the study was that the similar genes seem to be evolving faster than other genes remarkably /r'ma:kabli At its best, the European project is remarkably liberal comment /'koment I could not help commenting upon it",
    "example_zh": "只有在特味情况下才会延长最后期限。约翰刚说完开场白就被听众打断了这项研究的一个显著发现是，相似的基因似乎比其他基因进化得更快。在最佳情况下，这一欧洲项日(欧盟计划)是非常自由的。不考研英语你还在背单词吗",
    "derivatives": [],
@@ -22636,7 +22647,7 @@
    "hints": [
     {
      "type": "词根词缀",
-     "text": "re(重复)+mark(标记)一重复2 地做标记，就是在“评论、谈论”"
+     "text": "re(重复)+mark(标记)一重复地做标记，就是在“评论、谈论”"
     }
    ],
    "example_en": "",
@@ -22725,7 +22736,12 @@
    "word": "critic",
    "phonetic": "/ˈkrɪtɪk/",
    "meaning": "n. 批评家，评论家",
-   "hints": [],
+   "hints": [
+    {
+     "type": "联想",
+     "text": "可热爱挑剔的客人是批评家"
+    }
+   ],
    "example_en": "He was knighted in 1967，the first music critic to be so honored",
    "example_zh": "他于1967年被授予爵士头衔，是第一位获得如此殊荣的音乐评论家。",
    "derivatives": [
@@ -22744,7 +22760,7 @@
    "page": 106,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ˈkrɪtɪk/",
@@ -22783,7 +22799,12 @@
    "word": "critical",
    "phonetic": "/ˈkrɪtɪk(ə)l/",
    "meaning": "adj. 批判的；爱挑剔的；决定性的；极其重要的",
-   "hints": [],
+   "hints": [
+    {
+     "type": "联想",
+     "text": "批判是很重要的"
+    }
+   ],
    "example_en": "Food production and biodiversity health are clearly of critical importance crucial, vital, key",
    "example_zh": "粮食生产和生物多样性健康显然至关重要。",
    "derivatives": [],
@@ -22800,7 +22821,7 @@
    "page": 106,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ˈkrɪtɪk(ə)l/",
@@ -22833,7 +22854,7 @@
    "page": 106,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/kraɪˈtɪəriən/",
@@ -22847,7 +22868,11 @@
    "hints": [
     {
      "type": "形近对照",
-     "text": "iron 意为“铁”，irony“话语冰冷如铁、生硬如铁”，不就是“嘲讽”和“反话”引5"
+     "text": "iron 意为“铁”，irony“话语冰冷如铁、生硬如铁”，不就是“嘲讽”和“反话”嘛！"
+    },
+    {
+     "type": "记忆",
+     "text": "iron man 钢铁侠"
     }
    ],
    "example_en": "The Arony of the historian's craft is that its practitioners always know that their efforts are but contributions to an unending process",
@@ -22868,7 +22893,7 @@
    "page": 106,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ˈaɪrəni/",
@@ -22882,7 +22907,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "sa(联想成“啥”)+tire(联想成 tired12“累了”)一才学习一会就累了，你能考上研究生才怪，这是在“试刺”你。"
+     "text": "sa(联想成“啥”)+tire(联想成 tired“累了”)一才学习一会就累了，你能考上研究生才怪，这是在“试刺”你。"
     }
    ],
    "example_en": "Satire is often a form of protest against injustice",
@@ -22905,21 +22930,44 @@
    "page": 106,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "河以群记探心",
    "suspect": "",
    "phonetic_uk": "/ˈsætaɪə(r)/",
    "phonetic_src": "dict"
   },
   {
-   "id": 619,
-   "word": "delete",
-   "phonetic": "/dɪˈliːt/",
-   "meaning": "v.删除；删去v.消灭；根除；杜绝",
+   "word": "erase",
+   "phonetic": "/ɪˈreɪs/",
+   "phonetic_uk": "/ɪˈreɪz/",
+   "meaning": "v. 抹去，擦掉；删除；忘却；消除，消灭；（易）被擦掉，（易）被抹去",
    "hints": [
     {
      "type": "联想",
-     "text": "e(发音类似“已”)+radi(联想成Y2 “ready”) + cate(联想成“尅它”)一已准备好尅它，也就是解决它，消灭它一消灭，根除。"
+     "text": "eraser橡皮"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3885
+  },
+  {
+   "id": 619,
+   "word": "eradicate",
+   "phonetic": "/ɪˈrædɪkeɪt/",
+   "meaning": "v. 根除，消灭",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "e(发音类似“已”)+radi(联想成“ready”) + cate(联想成“尅它”)一已准备好尅它，也就是解决它，消灭它一消灭，根除。"
     }
    ],
    "example_en": "Once you have a first draft on paper, you can delete material that is unrelated to your thesis erase Ai'rerz/ ”、 Half of the participants were told the information would be erased eradicate Aredikert/ Humanity has the necessary agro- technological tools to eradicate hunger",
@@ -22938,10 +22986,10 @@
    "page": 107,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "週以群记抓核心",
    "suspect": "",
-   "phonetic_uk": "/dɪˈliːt/",
+   "phonetic_uk": "/ɪˈrædɪkeɪt/",
    "phonetic_src": "dict"
   },
   {
@@ -22981,8 +23029,13 @@
    "id": 621,
    "word": "console",
    "phonetic": "/kənˈsoʊl/",
-   "meaning": "安慰；抚慰；慰藉",
-   "hints": [],
+   "meaning": "v .安慰；慰藉 n. 控制台，仪表盘；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "所有都馊了-->安慰"
+    }
+   ],
    "example_en": "",
    "example_zh": "",
    "derivatives": [],
@@ -22999,7 +23052,7 @@
    "page": 107,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "週以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/kənˈsəʊl/",
@@ -23013,7 +23066,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "coun(=com/con“全部、共同”)+sel12(联想成 sell“卖”)一把所有的都卖了？我已得问问专业的法律顾问一法律顾问。"
+     "text": "coun(=com/con“全部、共同”)+sel(联想成 sell“卖”)一把所有的都卖了？我已得问问专业的法律顾问一法律顾问。"
     }
    ],
    "example_en": "Listen to the counsel of your elders",
@@ -23032,7 +23085,7 @@
    "page": 107,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "週以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈkaʊnsl/",
@@ -23082,7 +23135,7 @@
    "hints": [
     {
      "type": "形近对照",
-     "text": "你在咨询(consult)他的时候Y2 千万别冒犯(insult)他，不然你将没有干孩考研英语你还在背单词吗"
+     "text": "你在咨询(consult)他的时候千万别冒犯(insult)他，不然你将没有什么好结果（result）"
     }
    ],
    "example_en": "Emma Marris'article is an insull and a disservice to the thousands of passionate people",
@@ -23101,7 +23154,7 @@
    "page": 107,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "週以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ɪnˈsʌlt/",
@@ -23269,17 +23322,8 @@
    "id": 629,
    "word": "pull",
    "phonetic": "/pʊl/",
-   "meaning": "v.拉；拽；拖；拔出 n.拉；拽；引力；影响n.运动；移动；动作；动议；提议v.做动作，示意？2 词根词级：mot(= move“移动”)+ion(名词后缀)*移动。adj.偏远的；偏僻的；遥远的，久远的；相差很大的；极不相同的n.动机；原因；目的",
-   "hints": [
-    {
-     "type": "词根词缀",
-     "text": "re(回)＋mot(移动)+e一往回1移动，那就越来越远了一遥远的，久远的。"
-    },
-    {
-     "type": "词根词缀",
-     "text": "mot(移动)+ive(名词后纖)、使你动起来的东西是什么？一动机"
-    }
-   ],
+   "meaning": "v.拉；拽；拖；拔出 n.拉；拽；引力；影响",
+   "hints": [],
    "example_en": "The tides depend on the pull of the moon. motion /'maufn Do not open the door when the train is in motion His theories are somewhat remote from reality motive /'mautv But this effect is not a part 0f",
    "example_zh": "潮汐是月亮引力作用的结果。列车行驶时不要打开车门。他的理论有点儿脱离现实。",
    "derivatives": [
@@ -23307,18 +23351,92 @@
    "page": 108,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "週以群记抓核心",
    "suspect": "词义过长",
    "phonetic_uk": "/pʊl/",
    "phonetic_src": "dict"
   },
   {
+   "word": "motion",
+   "phonetic": "/ˈmoʊʃ(ə)n/",
+   "phonetic_uk": "/ˈməʊʃn/",
+   "meaning": "n. 运动，移动；手势，动作；提议，议案；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "mot（移动）+ion（名词后缀）-->移动"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3886
+  },
+  {
+   "word": "remote",
+   "phonetic": "/rɪˈmoʊt/",
+   "phonetic_uk": "/rɪˈməʊt/",
+   "meaning": "adj. 边远的，偏僻的；（距离或空间上）遥远的；（时间上）久远的；差别很大的，很不相同的；",
+   "hints": [
+    {
+     "type": "词根词缀",
+     "text": "re(回)＋mot(移动)+e一往回1移动，那就越来越远了一遥远的，久远的。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3887
+  },
+  {
+   "word": "motive",
+   "phonetic": "/ˈmoʊtɪv/",
+   "phonetic_uk": "/ˈməʊtɪv/",
+   "meaning": "n. 动机，目的，原因；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "mot(移动)+ive-->使你动起来的东西是什么？-->动机"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3888
+  },
+  {
    "id": 630,
    "word": "motivate",
    "phonetic": "/ˈmoʊtɪveɪt/",
-   "meaning": "激励，激发；成为⋯•的动机，是⋯⋯的原因词模词曼：motiv(= motive”动机”)+ate(动词后缓)一使你有动机一激励，激发。",
-   "hints": [],
+   "meaning": "v. 成为……的动机，是……的原因；激励，激发；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "motiv(= motive”动机”)+ate(动词后缓)一使你有动机一激励，激发。"
+    }
+   ],
    "example_en": "S Nol only are the tasks apparently infinite， the co-workers are much harder to motivate",
    "example_zh": "不仅任务无穷无尽，同事们也很难被激励起来。",
    "derivatives": [],
@@ -23344,7 +23462,7 @@
    "page": 109,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "词头待校对;词头已自动修正",
    "phonetic_uk": "/ˈməʊtɪveɪt/",
@@ -23354,7 +23472,7 @@
    "id": 631,
    "word": "remove",
    "phonetic": "/rɪˈmuːv/",
-   "meaning": "彩开；拿开；去掉；从……机构开除；脱去(衣服等)；摘下；去除，排除(污渍、不愉快的事物等)；佳消失；免除，解除(职务等)",
+   "meaning": "v. 移开，拿开；除去，废除；把……免职，开除；脱下，摘下；",
    "hints": [
     {
      "type": "词根词",
@@ -23388,7 +23506,7 @@
    "page": 109,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/rɪˈmuːv/",
@@ -23398,16 +23516,18 @@
    "id": 632,
    "word": "emotion",
    "phonetic": "/ɪˈmoʊʃ(ə)n/",
-   "meaning": "nn.强烈的感情；激情；情感；情绪",
+   "meaning": "n.强烈的感情；激情；情感；情绪",
    "hints": [
     {
      "type": "词根词",
-     "text": "级：e(出去)+mot(=move“移动”)12+ion(名词后缀)一把你内心的运动表示出来，通过什么表示出来一情感，情绪。Consequently,our feelings,thoughts and"
+     "text": "级：e(出去)+mot(=move“移动”)+ion(名词后缀)一把你内心的运动表示出来，通过什么表示出来一情感，情绪"
     }
    ],
    "example_en": "emotions have undergone a corresponding change emotional. /n'mau/anl/ adj",
    "example_zh": "因此，我们的感觉、思想和情绪也发生了相应的变化。感情的；情感的；情绪的 LU C",
-   "derivatives": [],
+   "derivatives": [
+    "emotional，adj.感情的；情感的，情绪的"
+   ],
    "synonyms": "",
    "phrases": [],
    "compare": "",
@@ -23430,7 +23550,7 @@
    "page": 109,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ɪˈməʊʃ(ə)n/",
@@ -23507,8 +23627,13 @@
    "id": 635,
    "word": "reasonable",
    "phonetic": "/ˈriːz(ə)nəb(ə)l/",
-   "meaning": "adj. 合乎情理的，合理的；不错的adj.可取的，明智的 ◎.",
-   "hints": [],
+   "meaning": "adj. 合乎情理的，合理的；不错的adj.可取的，明智的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "一个人有理由（reason），说话做事讲逻辑，就是 reasonable（通情达理、合理）"
+    }
+   ],
    "example_en": "They could take reasonable measures to ensure that phone data are not erased or altered while waiting for a warrant",
    "example_zh": "在等待搜查令期间，他们可以采取合理措施，以确保电话数据不会被删除或修改。位 Early booking is advisable， 提早預订多考研英语你还在背单词吗",
    "derivatives": [
@@ -23528,11 +23653,34 @@
    "page": 109,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈriːznəbl/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "advisable",
+   "phonetic": "/ədˈvaɪzəb(ə)l/",
+   "phonetic_uk": "/ədˈvaɪzəb(ə)l/",
+   "meaning": "adj. 明智的，可取的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "可以建议（advice）的"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3889
   },
   {
    "id": 636,
@@ -23576,7 +23724,7 @@
    "hints": [
     {
      "type": "词根词缀",
-     "text": "note(= notice”“注意”)+worthy值得的)一-值得注意的。"
+     "text": "note(笔记)+worthy(值得的)值得做笔记的---值得注意的。"
     }
    ],
    "example_en": "®n The bridge is noteworthy for its sheer size.",
@@ -23599,7 +23747,7 @@
    "page": 110,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈnəʊtwɜːði/",
@@ -23722,11 +23870,11 @@
    "id": 641,
    "word": "celebrate",
    "phonetic": "/ˈselɪbreɪt/",
-   "meaning": "庆祝；庆贺；主持宗教仪式；赞美；歌颂",
+   "meaning": "V.庆祝；庆贺；主持宗教仪式；赞美；歌颂",
    "hints": [
     {
      "type": "联想",
-     "text": "icele(发音类似“赛了”)+br(联想成22 “必然”)+ate(吃)一比完賽了，必然会吃一顿“庆视”一下。"
+     "text": "icele(发音类似“赛了”)+br(联想成“必然”)+ate(吃)一比完賽了，必然会吃一顿“庆视”一下。"
     }
    ],
    "example_en": "Though it may celebrate girlhood in way, it also repeatedly and firmly fuses girls' identity to appearance",
@@ -23749,7 +23897,7 @@
    "page": 110,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈselɪbreɪt/",
@@ -23763,11 +23911,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "cere［发音类似“赛罗(奥特曼其中的22 一个)\"］+mony(联想成 many“很多”)-很多奥特曼都来了，来干什么？参加“典礼”。"
-    },
-    {
-     "type": "谐音",
-     "text": "发音类似“肥死他”-一天天参加宴会大吃大喝，会不会肥死他？一宴会。"
+     "text": "cere发音类似“赛罗(奥特曼其中的22 一个)\"+mony(联想成 many“很多”)-很多奥特曼都来了，来干什么？参加“典礼”。"
     }
    ],
    "example_en": "She attended the supermarket's grand opening ceremony wedding feast",
@@ -23790,11 +23934,34 @@
    "page": 110,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈserəməni/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "feast",
+   "phonetic": "/fiːst/",
+   "phonetic_uk": "/fiːst/",
+   "meaning": "n. 宴会；盛会; v. 饱餐，尽情享用；宴请",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "发音类似“肥死他”-一天天参加宴会大吃大喝，会不会肥死他？一宴会。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3890
   },
   {
    "id": 643,
@@ -23822,11 +23989,34 @@
    "page": 111,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈrɪtʃuəl/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "holy",
+   "phonetic": "/ˈhoʊli/",
+   "phonetic_uk": "/ˈhəʊli/",
+   "meaning": "adj. 神圣的；圣洁的；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "Hollywood好莱坞，对于明星来说那个地方很神圣"
+    }
+   ],
+   "example_en": "holy bible",
+   "example_zh": "圣经",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3891
   },
   {
    "id": 644,
@@ -23868,15 +24058,11 @@
    "id": 645,
    "word": "royal",
    "phonetic": "/ˈrɔɪəl/",
-   "meaning": "qQj.王室的，皇家的；盛大的n.王室成员100 “滴苦\"相关",
+   "meaning": "adj.王室的，皇家的；盛大的n.王室成员",
    "hints": [
     {
      "type": "形近对照",
      "text": "对王室(royal)要忠诚(loyal)。"
-    },
-    {
-     "type": "谐音",
-     "text": "发音类似“老友”。老友就是很“忠诚的、忠心的”。"
     }
    ],
    "example_en": "It is the British royals who have most to fear from the Spanish example /lorl/ The middle class used to be loyal to the free enterprise system",
@@ -23889,10 +24075,8 @@
     "distress 同根 stress",
     "ad 忠诚的，忠心的。"
    ],
-   "compare": "",
-   "notes": [
-    "相关"
-   ],
+   "compare": "相关",
+   "notes": [],
    "no": null,
    "group": "神圣、忠诚”相关",
    "related": [
@@ -23905,11 +24089,34 @@
    "page": 111,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈrɔɪəl/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "loyal",
+   "phonetic": "/ˈlɔɪəl/",
+   "phonetic_uk": "/ˈlɔɪəl/",
+   "meaning": "adj. 忠诚的，忠贞的",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "读音-老友。老友忠诚的忠心的"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3892
   },
   {
    "id": 646,
@@ -23920,7 +24127,7 @@
    "example_en": "She insisted that she was faithful to her husband",
    "example_zh": "她坚持说自己对丈夫是忠诚的。",
    "derivatives": [
-    "Taith /fera/ n. 信仰，信念"
+    "faith /feɪθ/ n. 信仰，信念"
    ],
    "synonyms": "",
    "phrases": [],
@@ -23938,44 +24145,29 @@
    "page": 111,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈfeɪθf(ə)l/",
    "phonetic_src": "dict"
   },
   {
-   "id": 647,
-   "word": "distant",
-   "phonetic": "/ˈdɪstənt/",
-   "meaning": "考研英语你还在背单词吗stress /surcsn.(精神)压力；强调，重要性；重音Y、着重，强调",
+   "word": "stress",
+   "phonetic": "/stres/",
+   "phonetic_uk": "/stres/",
+   "meaning": "n. 精神压力，紧张；压力，应力；强调，重要性；",
    "hints": [],
-   "example_en": "She failed to withstand the stresses and strains of public life",
-   "example_zh": "她承受不了作为一个公众人物的生活压力和紧张。",
-   "derivatives": [
-    "stressful /'stresfl/ adj. 压力重的；紧张的"
-   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
    "synonyms": "",
    "phrases": [],
    "compare": "",
    "notes": [],
-   "no": null,
-   "group": "神圣、忠诚”相关",
-   "related": [
-    "holy",
-    "loyal 形近 royal",
-    "“神蛋、忠话”",
-    "sacred 相关",
-    "faithful"
-   ],
-   "page": 111,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
-   "part_title": "词以群记抓核心",
-   "suspect": "词头已自动修正",
-   "phonetic_uk": "/ˈdɪstənt/",
-   "phonetic_src": "dict"
+   "part": 1,
+   "id": 3893
   },
   {
    "id": 648,
@@ -24014,42 +24206,16 @@
    "phonetic_src": "dict"
   },
   {
-   "id": 649,
-   "word": "distressing",
-   "phonetic": "/dɪˈstresɪŋ/",
-   "meaning": "adj 令人苦恼的，使人痛苦的 以(",
-   "hints": [],
-   "example_en": "",
-   "example_zh": "",
-   "derivatives": [],
-   "synonyms": "",
-   "phrases": [],
-   "compare": "",
-   "notes": [],
-   "no": null,
-   "group": "神圣、忠诚”相关",
-   "related": [
-    "holy",
-    "loyal 形近 royal",
-    "“神蛋、忠话”",
-    "sacred 相关",
-    "faithful"
-   ],
-   "page": 112,
-   "unit": 4,
-   "lesson": 15,
-   "part": "1",
-   "part_title": "词以群记抓核心",
-   "suspect": "",
-   "phonetic_uk": "/dɪˈstresɪŋ/",
-   "phonetic_src": "dict"
-  },
-  {
    "id": 650,
    "word": "agony",
    "phonetic": "/ˈæɡəni/",
-   "meaning": "极大的痛苦谱音：发音类似“爱过你”一曾经爱过你，可爱已成往事，爱而不得是让人十分痛苦的一极大的痛苦。",
-   "hints": [],
+   "meaning": "n. 剧痛，创痛；痛楚，苦难",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "发音类似“爱过你”一曾经爱过你，可爱已成往事，爱而不得是让人十分痛苦的一极大的痛苦。"
+    }
+   ],
    "example_en": "S Modern medicine has prolonged the physical agony of dying",
    "example_zh": "现代医学延长了临终前肉体的痛苦。",
    "derivatives": [],
@@ -24069,7 +24235,7 @@
    "page": 112,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈæɡəni/",
@@ -24083,7 +24249,7 @@
    "hints": [
     {
      "type": "联想",
-     "text": "mis(联想成 miss“想念”)+ery(联想"
+     "text": "妹妹死了--->痛苦"
     }
    ],
    "example_en": "People in earlier eras were surrounded by reminders of mnisery",
@@ -24095,10 +24261,8 @@
    "phrases": [
     "P成very)-非常想念一个人，见不到那一定"
    ],
-   "compare": "",
-   "notes": [
-    "很痛苦一痛苦，苦恼。"
-   ],
+   "compare": "很痛苦一痛苦，苦恼。",
+   "notes": [],
    "no": null,
    "group": "神圣、忠诚”相关",
    "related": [
@@ -24111,7 +24275,7 @@
    "page": 112,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈmɪzəri/",
@@ -24124,12 +24288,8 @@
    "meaning": "adj. 疼痛的；引起疼痛的；令人痛苦（难受）的，困难的；<非正式>令人难堪的",
    "hints": [
     {
-     "type": "词根词",
-     "text": "级，pain(痛苦)＋ful(形容诃后缀一痛苦的。"
-    },
-    {
-     "type": "谐音",
-     "text": "发音类似“偷车”一偷车肯定得拷同记-拷问，捞打。"
+     "type": "词根词缀",
+     "text": "no pains，no gains pain(痛苦)＋ful(形容词后缀）-->痛苦的。"
     }
    ],
    "example_en": "Why do people read negative Interne comments and do other things that will obviously be painful？ torture /toitjo(r 1 C) He spent his life lortured by the memories of his childhood",
@@ -24151,7 +24311,7 @@
    "page": 112,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "meaning_src": "dict",
@@ -24159,22 +24319,37 @@
    "phonetic_src": "dict"
   },
   {
+   "word": "torture",
+   "phonetic": "/ˈtɔːrtʃər/",
+   "phonetic_uk": "/ˈtɔːtʃə(r)/",
+   "meaning": "n. 拷打，拷问，酷刑逼供；折磨，煎熬；变形 v. 拷打，拷问",
+   "hints": [
+    {
+     "type": "谐音",
+     "text": "发音类似“掏钱”一掏钱肯定得拷同记-拷问，捞打。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3894
+  },
+  {
    "id": 653,
    "word": "torment",
    "phonetic": "/ˈtɔːrment/",
-   "meaning": "之源Eto:ment/b. 使备受折磨；使痛苦；烦扰n.回应；反驳v.反驳；回嘴v.(使)变形，扭曲；歪曲",
+   "meaning": "n. （肉体、精神上的）折磨，痛苦；使人痛苦的人（物） v. 使痛苦，折磨；骚扰，捉弄",
    "hints": [
     {
      "type": "联想",
      "text": "逃(tor)到门(ment)里，承受了很大 的“痛苦”。"
-    },
-    {
-     "type": "联想",
-     "text": "re(联想成“阿姨”)+tort(发音类似12“淘汰”)一-阿姨说你会被淘汰一-你肯定“反驳”啊。"
-    },
-    {
-     "type": "词根词缀",
-     "text": "dis(表示“加强”)+tort(担曲)纪，一直担曲一一使变形。"
     }
    ],
    "example_en": "M He was tormented by feelings of insecurity retort /n'tort Sam relorted that it was my fault as much as his distort /di'sto:t C) Newspapers are often guilty of distorlingdbe truth 101 “rive”",
@@ -24196,11 +24371,57 @@
    "page": 112,
    "unit": 4,
    "lesson": 15,
-   "part": "1",
+   "part": 1,
    "part_title": "词以群记抓核心",
    "suspect": "",
    "phonetic_uk": "/ˈtɔːment/",
    "phonetic_src": "dict"
+  },
+  {
+   "word": "retort",
+   "phonetic": "/rɪˈtɔːrt/",
+   "phonetic_uk": "/rɪˈtɔːt/",
+   "meaning": "v. 回应，（愤怒或风趣地）反驳，回嘴；",
+   "hints": [
+    {
+     "type": "联想",
+     "text": "re(联想成“阿姨”)+tort(发音类似“淘汰”)一-阿姨说你会被淘汰--你肯定“反驳”啊。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3895
+  },
+  {
+   "word": "distort",
+   "phonetic": "/dɪˈstɔːrt/",
+   "phonetic_uk": "/dɪˈstɔːt/",
+   "meaning": "v. 扭曲，使失真；歪曲，曲解",
+   "hints": [
+    {
+     "type": "词根词缀",
+     "text": "dis(表示“加强”)+tort(担曲)纪，一直担曲一一使变形。"
+    }
+   ],
+   "example_en": "",
+   "example_zh": "",
+   "derivatives": [],
+   "synonyms": "",
+   "phrases": [],
+   "compare": "",
+   "notes": [],
+   "unit": 4,
+   "lesson": 15,
+   "part": 1,
+   "id": 3896
   },
   {
    "id": 654,
