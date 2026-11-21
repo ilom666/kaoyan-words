@@ -41,6 +41,92 @@ function toast(msg, ms = 1800) {
   t._tm = setTimeout(() => t.hidden = true, ms);
 }
 
+const DEFAULT_KEYS = {
+  start: ['Enter'],
+  reveal: ['Space'],
+  next: ['ArrowRight', 'N'],
+  prev: ['ArrowLeft', 'P'],
+  known: ['1'],
+  unknown: ['2'],
+  speak: ['E'],
+  star: ['S'],
+  quickEdit: ['Q'],
+  game1: ['1'],
+  game2: ['2'],
+  game3: ['3'],
+  game4: ['4'],
+  gameSpeak: ['E'],
+  gameQuit: ['Escape'],
+  gameAgain: ['Enter'],
+  readingBack: ['Escape'],
+  readingAgain: ['Enter'],
+};
+
+const KEY_GROUPS = [
+  { title: '通用 / 首页', actions: [
+    ['start', '开始刷词'],
+  ] },
+  { title: '刷词页', actions: [
+    ['reveal', '显示 / 隐藏词义'],
+    ['next', '下一个'],
+    ['prev', '上一个'],
+    ['known', '标为认识'],
+    ['unknown', '标为不认识'],
+    ['speak', '朗读'],
+    ['star', '收藏 / 取消收藏'],
+    ['quickEdit', '快速修改'],
+  ] },
+  { title: '小游戏', actions: [
+    ['game1', '选项 1'],
+    ['game2', '选项 2'],
+    ['game3', '选项 3'],
+    ['game4', '选项 4'],
+    ['gameSpeak', '再听一遍'],
+    ['gameQuit', '退出 / 返回菜单'],
+    ['gameAgain', '再来一局'],
+  ] },
+  { title: 'AI 阅读理解', actions: [
+    ['readingBack', '返回 / 关闭弹层'],
+    ['readingAgain', '再生成一篇'],
+  ] },
+];
+
+const KEY_LABELS = {
+  Space: '空格', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓',
+  Escape: 'Esc', Enter: '回车', Backspace: '退格', Tab: 'Tab',
+  Control: 'Ctrl', Alt: 'Alt', Meta: 'Meta', Shift: 'Shift',
+};
+
+let capturingKeyAction = null;
+
+function cloneKeys(keys) {
+  const out = {};
+  for (const [k, v] of Object.entries(keys || {})) out[k] = Array.isArray(v) ? [...v] : [];
+  return out;
+}
+
+function normalizeKeyEvent(e) {
+  let key = e.key;
+  if (key === ' ') key = 'Space';
+  else if (key.length === 1) key = key.toUpperCase();
+  const parts = [];
+  if (e.ctrlKey) parts.push('Ctrl');
+  if (e.altKey) parts.push('Alt');
+  if (e.metaKey) parts.push('Meta');
+  if (e.shiftKey) parts.push('Shift');
+  parts.push(key);
+  return parts.join('+');
+}
+
+function keyLabel(k) {
+  return String(k).split('+').map(p => KEY_LABELS[p] || p).join(' + ');
+}
+
+function keyMatches(action, e) {
+  const list = S.settings.keys?.[action] || DEFAULT_KEYS[action] || [];
+  return Array.isArray(list) && list.includes(normalizeKeyEvent(e));
+}
+
 /* ---------- 全局状态 ---------- */
 const S = {
   words: [],
@@ -57,11 +143,16 @@ const S = {
   listFrom: 'home',     // 列表来源视图
   listQ: '', listPage: 1, listSize: 50,
   listRevealed: new Set(),  // 当前已点开词义的词条 id
-  settings: { maskMode: 'both', autoSpeak: false, autoReveal: false, autoNextKnown: false, shuffle: false, unknownOnly: false, accent: 'uk', listMask: true, listGroupByUnit: false, listSize: 50 },
-  mg: { q: '', lesson: '', page: 1, size: 50, selectedId: null, swapMode: false, swapSel: [] },
+  settings: { maskMode: 'both', autoSpeak: false, autoReveal: false, autoNextKnown: false, shuffle: false, unknownOnly: false, accent: 'uk', listMask: true, listGroupByUnit: false, listSize: 50, keys: cloneKeys(DEFAULT_KEYS) },
+  mg: { q: '', lesson: '', page: 1, size: 50, selectedId: null },
   editingId: null,
   editingAfterId: null,
 };
+
+function mergeSettings(src) {
+  Object.assign(S.settings, src || {});
+  S.settings.keys = { ...DEFAULT_KEYS, ...cloneKeys(src?.keys || {}) };
+}
 
 /* ---------- 数据加载 ---------- */
 async function loadWords() {
@@ -70,6 +161,10 @@ async function loadWords() {
   S.words = data.words || [];
   S.byId = new Map(S.words.map(w => [w.id, w]));
   buildLessons();
+}
+
+function syncQueueWords() {
+  S.queue = S.queue.map(w => S.byId.get(w.id) || w);
 }
 
 const PART_META = {
@@ -98,6 +193,14 @@ function lessonLabel(l) {
   if (!l) return '';
   if (l.part === 3) return `扩展词 ${l.group}`;
   return `Lesson ${l.lesson || ''}`;
+}
+
+function wordLocation(w) {
+  const l = S.lessons.find(x => x.key === lessonKey(w));
+  const label = l?.label || (String(w.part || '1') === '3'
+    ? `扩展词 ${letterGroup((w.word || 'a')[0].toLowerCase())}`
+    : `Lesson ${w.lesson || ''}`);
+  return w.seq ? `${label} · 第${w.seq}词` : label;
 }
 
 function buildLessons() {
@@ -155,7 +258,7 @@ async function apiDelete(id) {
 /* ---------- 视图切换 ---------- */
 function show(view) {
   $('#quick-mask').hidden = true;
-  for (const v of ['home', 'study', 'manage', 'stats', 'words', 'game', 'reading']) {
+  for (const v of ['home', 'study', 'manage', 'stats', 'words', 'game', 'reading', 'settings']) {
     $(`#view-${v}`).hidden = v !== view;
   }
   if (view !== 'game' && window.WordGames) WordGames.onHide();
@@ -667,7 +770,7 @@ function markKnown(v) {
   st.known = S.known;
   saveStore(st);
   renderCard();
-  if (v === 1 && S.settings.autoNextKnown) setTimeout(next, 350);
+  if (S.settings.autoNextKnown) setTimeout(next, 350);
 }
 function next() {
   if (S.qi < S.queue.length - 1) { S.qi++; renderCard(); }
@@ -716,9 +819,10 @@ async function submitQuickEdit() {
   };
   try {
     patch = await autoFillEmpty(patch);
-    await apiSave([{ id: w.id, patch }]);
-    Object.assign(w, patch);
-    buildLessons();
+    const id = w.id;
+    await apiSave([{ id, patch }]);
+    await loadWords();
+    syncQueueWords();
     renderCard({ skipSpeak: true });
     closeQuickEdit();
     toast('已保存修改 ✓');
@@ -801,12 +905,14 @@ async function submitEdit() {
     patch = await autoFillEmpty(patch);
     if (S.editingId) {
       await apiSave([{ id: S.editingId, patch }]);
-      Object.assign(S.byId.get(S.editingId), patch);
+      await loadWords();
+      syncQueueWords();
     } else {
       const r = await apiAdd({ ...patch, after: S.editingAfterId });
-      S.mg.selectedId = r.id;
       await loadWords();
-      toast(`已新增词条 #${r.id}`);
+      syncQueueWords();
+      S.mg.selectedId = r.id;
+      toast(`已新增词条 #${r.id} · 本课第 ${r.seq} 个`);
     }
     $('#modal-mask').hidden = true;
     if (!$('#view-study').hidden) renderCard();
@@ -818,12 +924,14 @@ async function submitEdit() {
 async function deleteCurrent() {
   if (!S.editingId) return;
   if (!confirm(`确定删除词条 "${S.byId.get(S.editingId)?.word}"？`)) return;
-  await apiDelete(S.editingId);
+  const deletedId = S.editingId;
+  await apiDelete(deletedId);
   await loadWords();
+  syncQueueWords();
   $('#modal-mask').hidden = true;
   toast('已删除');
   renderManage(); renderHome();
-  if (!$('#view-study').hidden) { S.queue = S.queue.filter(w => w.id !== S.editingId); S.qi = Math.min(S.qi, Math.max(0, S.queue.length - 1)); renderCard(); }
+  if (!$('#view-study').hidden) { S.queue = S.queue.filter(w => w.id !== deletedId); S.qi = Math.min(S.qi, Math.max(0, S.queue.length - 1)); renderCard(); }
 }
 
 /* ---------- 词库管理 ---------- */
@@ -859,12 +967,9 @@ function renderMgList() {
   $('#mg-list').innerHTML = slice.map(w => {
     const st = S.known[w.id];
     const sel = S.mg.selectedId === w.id ? ' selected' : '';
-    const si = S.mg.swapSel.indexOf(w.id);
-    const swapCls = si >= 0 ? ` swap-picked swap-${si === 0 ? 'a' : 'b'}` : '';
-    const tag = S.mg.swapMode
-      ? `<span class="swap-tag">${si >= 0 ? (si === 0 ? 'A' : 'B') : '○'}</span>` : '';
-    return `<div class="mg-item${sel}${swapCls}" data-id="${w.id}">
-      ${tag}
+    return `<div class="mg-item${sel}" data-id="${w.id}">
+      <span class="mi-drag" title="长按拖动排序" aria-hidden="true">⠿</span>
+      <span class="mi-seq" title="本课序号">#${w.seq ?? ''}</span>
       <span class="mi-word">${esc(w.word)}</span>
       <span class="mi-ph">${esc(w.phonetic)}</span>
       <span class="mi-meaning">${esc((w.meaning || '').slice(0, 60))}</span>
@@ -874,32 +979,22 @@ function renderMgList() {
   }).join('') || '<div style="color:var(--ink-2);text-align:center;padding:30px">无匹配词条</div>';
   $('#mg-page-info').dataset.base = `${S.mg.page} / ${pages} 页 · 共 ${list.length} 条`;
   updateMgSelection();
-  updateSwapUI();
 
-  // 单击: 交换模式下依次选 A/B; 普通模式只更新选中态(不重建 DOM, 否则双击无法触发)
+  // 单击只更新选中态(不重建 DOM, 否则双击无法触发)
   $('#mg-list').onclick = (e) => {
+    if (suppressMgClick) return;
     const edit = e.target.closest('.mi-edit');
     if (edit) { openEdit(+edit.dataset.id); return; }
     const item = e.target.closest('.mg-item');
     if (!item) return;
     const id = +item.dataset.id;
-    if (S.mg.swapMode) {
-      const arr = S.mg.swapSel;
-      const i = arr.indexOf(id);
-      if (i >= 0) arr.splice(i, 1);
-      else if (arr.length < 2) arr.push(id);
-      else { arr.shift(); arr.push(id); }
-      renderMgList();
-      return;
-    }
     S.mg.selectedId = S.mg.selectedId === id ? null : id;
     updateMgSelection();
   };
 
-  // 双击某行 = 在该词后方插入新词(交换模式下禁用, 避免误触发)
+  // 双击某行 = 在该词后方插入新词
   $('#mg-list').ondblclick = (e) => {
-    if (S.mg.swapMode) return;
-    if (e.target.closest('.mi-edit')) return;
+    if (suppressMgClick || e.target.closest('.mi-edit')) return;
     const item = e.target.closest('.mg-item');
     if (!item) return;
     window.getSelection()?.removeAllRanges();
@@ -910,53 +1005,243 @@ function renderMgList() {
   };
 }
 
-/* ---------- 交换两行位置 ---------- */
-function updateSwapUI() {
-  const on = !!S.mg.swapMode;
-  const [a, b] = S.mg.swapSel;
-  const wa = a ? S.byId.get(a) : null;
-  const wb = b ? S.byId.get(b) : null;
-  $('#mg-swap-mode').textContent = on ? '✕ 退出交换' : '⇅ 交换位置';
-  $('#mg-swap-mode').classList.toggle('active', on);
-  $('#mg-swap-do').hidden = !on;
-  $('#mg-swap-do').disabled = S.mg.swapSel.length !== 2;
-  $('#mg-tip').innerHTML = on
-    ? `💡 <b>交换模式</b>：依次点击两行（可跨页），A ${wa ? `「${esc(wa.word)}」` : '未选'} · B ${wb ? `「${esc(wb.word)}」` : '未选'}，选好后点「交换选中两行」`
-    : '💡 单击选中 · <b>双击任意行 = 在其后插入新词</b> · 点 ✏️ 编辑 · 选中后点「+ 新增词条」效果相同';
+/* ---------- 长按拖动排序 ---------- */
+const MG_LONG_PRESS_MS = 380;
+const MG_EDGE = 88;
+const MG_MAX_SCROLL = 18;
+let mgDrag = null;
+let suppressMgClick = false;
+
+function startMgPress(item, x, y, kind) {
+  if (mgDrag || !item || !item.closest('#mg-list') || item.closest('button, input, select, a')) return;
+  const rect = item.getBoundingClientRect();
+  mgDrag = {
+    kind, item, id: +item.dataset.id,
+    startX: x, startY: y, pointerX: x, pointerY: y,
+    offsetX: x - rect.left, offsetY: y - rect.top,
+    active: false,
+    timer: setTimeout(beginMgDrag, MG_LONG_PRESS_MS),
+  };
+  item.classList.add('mg-pressing');
 }
 
-function toggleSwapMode() {
-  S.mg.swapMode = !S.mg.swapMode;
-  S.mg.swapSel = [];
-  renderMgList();
-  toast(S.mg.swapMode ? '交换模式：请依次点击两行' : '已退出交换模式');
+function beginMgDrag() {
+  const d = mgDrag;
+  if (!d || d.active) return;
+  const rect = d.item.getBoundingClientRect();
+  const placeholder = document.createElement('div');
+  placeholder.className = 'mg-drop-placeholder';
+  placeholder.style.height = `${rect.height}px`;
+  d.originalNext = d.item.nextElementSibling;
+  d.item.parentNode.insertBefore(placeholder, d.item);
+  d.placeholder = placeholder;
+  d.originalOrder = [...$('#mg-list').querySelectorAll('.mg-item')].map(el => +el.dataset.id);
+  d.lessonKey = lessonKey(S.byId.get(d.id));
+  d.item.style.left = `${rect.left}px`;
+  d.item.style.top = `${rect.top}px`;
+  d.item.style.width = `${rect.width}px`;
+  d.item.classList.remove('mg-pressing');
+  d.item.classList.add('mg-dragging');
+  d.active = true;
+  document.body.classList.add('mg-drag-active');
+  $('#mg-drag-cancel').hidden = false;
+  updateMgCancelState(d.pointerX, d.pointerY);
+  d.autoScrollRaf = requestAnimationFrame(autoScrollMg);
 }
 
-async function swapSelected() {
-  if (S.mg.swapSel.length !== 2) return;
-  const [a, b] = S.mg.swapSel;
-  const ia = S.words.findIndex(w => w.id === a);
-  const ib = S.words.findIndex(w => w.id === b);
-  if (ia < 0 || ib < 0) { toast('词条不存在'); return; }
+function isOverMgCancel(x, y) {
+  const el = $('#mg-drag-cancel');
+  if (!el || el.hidden) return false;
+  const r = el.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+function updateMgCancelState(x, y) {
+  const over = isOverMgCancel(x, y);
+  $('#mg-drag-cancel').classList.toggle('over', over);
+  return over;
+}
+
+function updateMgPlaceholder(y) {
+  const d = mgDrag;
+  if (!d?.active) return;
+  const list = $('#mg-list');
+  const sameLesson = [...list.querySelectorAll('.mg-item:not(.mg-dragging)')]
+    .filter(el => lessonKey(S.byId.get(+el.dataset.id)) === d.lessonKey);
+  let before = null;
+  for (const el of sameLesson) {
+    const r = el.getBoundingClientRect();
+    if (y < r.top + r.height / 2) { before = el; break; }
+  }
+  if (before) {
+    if (d.placeholder.nextElementSibling !== before) list.insertBefore(d.placeholder, before);
+    return;
+  }
+  const last = sameLesson[sameLesson.length - 1];
+  const after = last?.nextElementSibling || null;
+  if (last && d.placeholder.nextElementSibling !== after) list.insertBefore(d.placeholder, after);
+}
+
+function autoScrollMg() {
+  const d = mgDrag;
+  if (!d?.active) return;
+  if (isOverMgCancel(d.pointerX, d.pointerY)) {
+    d.autoScrollRaf = requestAnimationFrame(autoScrollMg);
+    return;
+  }
+  const vh = window.innerHeight;
+  let dy = 0;
+  if (d.pointerY < MG_EDGE) dy = -Math.ceil((MG_EDGE - d.pointerY) / MG_EDGE * MG_MAX_SCROLL);
+  else if (d.pointerY > vh - MG_EDGE) dy = Math.ceil((d.pointerY - (vh - MG_EDGE)) / MG_EDGE * MG_MAX_SCROLL);
+  if (dy) {
+    const before = window.scrollY;
+    window.scrollBy(0, dy);
+    if (window.scrollY !== before) updateMgPlaceholder(d.pointerY);
+  }
+  d.autoScrollRaf = requestAnimationFrame(autoScrollMg);
+}
+
+function moveMgPress(x, y) {
+  const d = mgDrag;
+  if (!d) return;
+  if (!d.active) {
+    if (Math.hypot(x - d.startX, y - d.startY) > 9) cancelMgPress();
+    return;
+  }
+  d.pointerX = x;
+  d.pointerY = y;
+  d.item.style.left = `${x - d.offsetX}px`;
+  d.item.style.top = `${y - d.offsetY}px`;
+  if (!updateMgCancelState(x, y)) updateMgPlaceholder(y);
+}
+
+function resetMgDragStyles(item, d) {
+  if (d?.autoScrollRaf) cancelAnimationFrame(d.autoScrollRaf);
+  const cancel = $('#mg-drag-cancel');
+  cancel.hidden = true;
+  cancel.classList.remove('over');
+  item.classList.remove('mg-pressing', 'mg-dragging');
+  item.style.left = item.style.top = item.style.width = '';
+  document.body.classList.remove('mg-drag-active');
+}
+
+function cancelMgPress() {
+  const d = mgDrag;
+  if (!d) return;
+  clearTimeout(d.timer);
+  if (d.active) {
+    if (d.originalNext?.parentNode) d.originalNext.parentNode.insertBefore(d.item, d.originalNext);
+    else d.placeholder.parentNode.appendChild(d.item);
+    d.placeholder.remove();
+  }
+  resetMgDragStyles(d.item, d);
+  mgDrag = null;
+}
+
+function endMgPress() {
+  const d = mgDrag;
+  if (!d) return;
+  clearTimeout(d.timer);
+  if (!d.active) {
+    d.item.classList.remove('mg-pressing');
+    mgDrag = null;
+    return;
+  }
+  if (isOverMgCancel(d.pointerX, d.pointerY)) {
+    cancelMgPress();
+    suppressMgClick = true;
+    setTimeout(() => { suppressMgClick = false; }, 350);
+    toast('已取消拖动，顺序未变');
+    return;
+  }
+  const newOrder = [];
+  for (const node of $('#mg-list').children) {
+    if (node === d.item) continue;
+    if (node === d.placeholder) { newOrder.push(d.id); continue; }
+    if (!node.classList.contains('mg-item')) continue;
+    const id = +node.dataset.id;
+    if (lessonKey(S.byId.get(id)) === d.lessonKey) newOrder.push(id);
+  }
+  d.placeholder.parentNode.insertBefore(d.item, d.placeholder);
+  d.placeholder.remove();
+  resetMgDragStyles(d.item, d);
+  mgDrag = null;
+  suppressMgClick = true;
+  setTimeout(() => { suppressMgClick = false; }, 350);
+  if (d.originalOrder.join(',') !== newOrder.join(',')) saveMgOrder(newOrder, d.id, d.lessonKey);
+}
+
+async function saveMgOrder(visibleOrder, movedId, key) {
+  const globalOrder = S.words.map(w => w.id);
+  const without = globalOrder.filter(id => id !== movedId);
+  const idx = visibleOrder.indexOf(movedId);
+  const nextId = visibleOrder[idx + 1];
+  const prevId = visibleOrder[idx - 1];
+  let insertAt = nextId != null ? without.indexOf(nextId) : prevId != null ? without.indexOf(prevId) + 1 : idx;
+  if (insertAt < 0) insertAt = without.length;
+  without.splice(insertAt, 0, movedId);
+  const lessonIds = without.filter(id => lessonKey(S.byId.get(id)) === key);
   try {
-    const res = await fetch('/api/swap', {
+    const res = await fetch('/api/reorder', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idA: a, idB: b }),
+      body: JSON.stringify({ ids: lessonIds }),
     });
     const j = await res.json();
-    if (!j.ok) throw new Error(j.error || '交换失败');
-    [S.words[ia], S.words[ib]] = [S.words[ib], S.words[ia]];
+    if (!j.ok) throw new Error(j.error || '排序保存失败');
+    lessonIds.forEach((id, i) => { S.byId.get(id).seq = i + 1; });
+    S.words = without.map(id => S.byId.get(id)).filter(Boolean);
     buildLessons();
-    S.mg.swapSel = [];
     renderMgList();
     const hint = $('#save-hint');
     hint.textContent = '✓ 顺序已保存';
     hint.classList.add('show');
     setTimeout(() => hint.classList.remove('show'), 1600);
-    toast('已交换两行位置 ✓');
+    toast('顺序已保存 ✓');
   } catch (e) {
-    toast('交换失败: ' + e.message);
+    renderMgList();
+    toast('排序保存失败: ' + e.message, 3000);
   }
+}
+
+function bindMgDrag() {
+  const list = $('#mg-list');
+  list.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch' || e.button !== 0) return;
+    const item = e.target.closest('.mg-item');
+    if (item) startMgPress(item, e.clientX, e.clientY, 'pointer');
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (mgDrag?.kind === 'pointer') moveMgPress(e.clientX, e.clientY);
+  }, { passive: false });
+  document.addEventListener('pointerup', () => {
+    if (mgDrag?.kind === 'pointer') endMgPress();
+  });
+  document.addEventListener('pointercancel', () => {
+    if (mgDrag?.kind === 'pointer') cancelMgPress();
+  });
+
+  list.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { cancelMgPress(); return; }
+    const item = e.target.closest('.mg-item');
+    if (!item) return;
+    const t = e.touches[0];
+    startMgPress(item, t.clientX, t.clientY, 'touch');
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (mgDrag?.kind !== 'touch') return;
+    const t = e.touches[0];
+    if (t) moveMgPress(t.clientX, t.clientY);
+    if (mgDrag?.active) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', (e) => {
+    if (mgDrag?.kind !== 'touch') return;
+    const t = e.changedTouches[0];
+    if (t) moveMgPress(t.clientX, t.clientY);
+    if (mgDrag?.kind === 'touch') endMgPress();
+  }, { passive: false });
+  document.addEventListener('touchcancel', () => {
+    if (mgDrag?.kind === 'touch') cancelMgPress();
+  }, { passive: true });
 }
 
 /* 局部刷新词库列表的选中态与提示(保持行节点不变) */
@@ -992,6 +1277,11 @@ function renderStats() {
 }
 
 /* ---------- 导入/导出 ---------- */
+function closeIoMenu() {
+  $('#io-dropdown').hidden = true;
+  $('#io-menu').classList.remove('open');
+  $('#btn-io').setAttribute('aria-expanded', 'false');
+}
 function exportJson() {
   const payload = {
     source: 'export',
@@ -1017,7 +1307,7 @@ async function importJson(file) {
     if (data.progress) {
       if (data.progress.known) S.known = data.progress.known;
       if (data.progress.starred) S.starred = data.progress.starred;
-      if (data.progress.settings) Object.assign(S.settings, data.progress.settings);
+      if (data.progress.settings) mergeSettings(data.progress.settings);
       saveStore({ ...store(), known: S.known, starred: S.starred, settings: S.settings });
       syncSettingsUI();
       restored = true;
@@ -1054,6 +1344,16 @@ function bind() {
     else show(b.dataset.view);
   });
   $('#nav-home').onclick = resumeOrHome;
+  $('#keys-groups').onclick = (e) => {
+    const btn = e.target.closest('.key-bind');
+    if (btn) startKeyCapture(btn);
+  };
+  $('#keys-reset').onclick = () => {
+    S.settings.keys = cloneKeys(DEFAULT_KEYS);
+    saveSettings();
+    renderKeySettings();
+    toast('已恢复默认按键');
+  };
   $('#btn-back').onclick = exitStudy;
   $('#btn-start').onclick = () => startStudy();
 
@@ -1142,8 +1442,7 @@ function bind() {
   $('#mg-prev').onclick = () => { if (S.mg.page > 1) { S.mg.page--; renderMgList(); } };
   $('#mg-next').onclick = () => { S.mg.page++; renderMgList(); };
   $('#mg-add').onclick = () => openEdit(null, S.mg.selectedId);
-  $('#mg-swap-mode').onclick = toggleSwapMode;
-  $('#mg-swap-do').onclick = swapSelected;
+  bindMgDrag();
 
   $('#btn-reset-progress').onclick = resetProgress;
 
@@ -1154,6 +1453,22 @@ function bind() {
   $('#btn-template-xlsx').onclick = downloadExcelTemplate;
   $('#btn-import-xlsx').onclick = () => $('#import-xlsx-file').click();
   $('#import-xlsx-file').onchange = (e) => { if (e.target.files[0]) importExcel(e.target.files[0]); e.target.value = ''; };
+
+  const ioMenu = $('#io-menu');
+  $('#btn-io').onclick = (e) => {
+    e.stopPropagation();
+    const willOpen = $('#io-dropdown').hidden;
+    $('#io-dropdown').hidden = !willOpen;
+    ioMenu.classList.toggle('open', willOpen);
+    $('#btn-io').setAttribute('aria-expanded', String(willOpen));
+  };
+  $('#io-dropdown').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (e.target.closest('button')) closeIoMenu();
+  });
+  document.addEventListener('click', (e) => {
+    if (!ioMenu.contains(e.target)) closeIoMenu();
+  });
 
   $('#modal-close').onclick = $('#modal-cancel').onclick = () => $('#modal-mask').hidden = true;
   $('#modal-youdao').onclick = async () => {
@@ -1183,27 +1498,34 @@ function bind() {
       else if (e.key === 'Enter' && e.target.tagName === 'INPUT') submitQuickEdit();
       return;
     }
-    // 首页选中课程 / 列表页, 按 Enter 进入刷词
-    if (e.key === 'Enter') {
+    if (capturingKeyAction) {
+      e.preventDefault();
+      if (e.key === 'Escape') finishKeyCapture();
+      else if (!['Control', 'Alt', 'Meta', 'Shift'].includes(e.key)) finishKeyCapture(normalizeKeyEvent(e));
+      return;
+    }
+    if (mgDrag) { if (e.key === 'Escape') cancelMgPress(); return; }
+    if (!$('#io-dropdown').hidden && e.key === 'Escape') { closeIoMenu(); return; }
+    // 首页选中课程 / 列表页, 按自定义键进入刷词
+    if (keyMatches('start', e)) {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
       if (!$('#view-home').hidden) { e.preventDefault(); startStudy(); return; }
       if (!$('#view-words').hidden) { e.preventDefault(); startStudy(listWords(), 'list'); return; }
     }
-    // 小游戏页: 交给游戏模块处理(答题数字键 / Esc 退出 / E 朗读)
+    // 小游戏页 / 阅读理解页交给各自模块处理
     if (!$('#view-game').hidden && window.WordGames && WordGames.onKey(e)) return;
-    // AI 阅读理解页: 交给阅读模块处理(Esc 返回)
     if (!$('#view-reading').hidden && window.WordReading && WordReading.onKey(e)) return;
     if ($('#view-study').hidden) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-    if (e.code === 'Space') { e.preventDefault(); revealAll(); }
-    else if (e.key === 'ArrowRight' || e.key === 'n') next();
-    else if (e.key === 'ArrowLeft' || e.key === 'p') prev();
-    else if (e.key === '1') markKnown(1);
-    else if (e.key === '2') markKnown(2);
-    else if (e.key.toLowerCase() === 'e') speak(curWord()?.word);
-    else if (e.key.toLowerCase() === 's') toggleStar();
-    else if (e.key.toLowerCase() === 'q') openQuickEdit();
+    if (keyMatches('reveal', e)) { e.preventDefault(); revealAll(); }
+    else if (keyMatches('next', e)) { e.preventDefault(); next(); }
+    else if (keyMatches('prev', e)) { e.preventDefault(); prev(); }
+    else if (keyMatches('known', e)) { e.preventDefault(); markKnown(1); }
+    else if (keyMatches('unknown', e)) { e.preventDefault(); markKnown(2); }
+    else if (keyMatches('speak', e)) { e.preventDefault(); speak(curWord()?.word); }
+    else if (keyMatches('star', e)) { e.preventDefault(); toggleStar(); }
+    else if (keyMatches('quickEdit', e)) { e.preventDefault(); openQuickEdit(); }
   });
 }
 
@@ -1221,6 +1543,43 @@ function saveSettings() {
   saveStore(st);
 }
 
+function renderKeySettings() {
+  const box = $('#keys-groups');
+  if (!box) return;
+  box.innerHTML = KEY_GROUPS.map(g => `
+    <div class="key-group">
+      <h3>${esc(g.title)}</h3>
+      ${g.actions.map(([id, label]) => {
+        const keys = S.settings.keys?.[id] || DEFAULT_KEYS[id] || [];
+        const caps = keys.map(k => `<kbd>${esc(keyLabel(k))}</kbd>`).join('<span> / </span>');
+        return `<div class="key-row" data-action="${id}">
+          <span class="key-label">${esc(label)}</span>
+          <span class="key-values">${caps || '<span style="color:var(--bad)">未设置</span>'}</span>
+          <button class="ghost-btn key-bind" data-action="${id}" type="button">修改</button>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function startKeyCapture(btn) {
+  $$('.key-bind.capturing').forEach(b => { b.classList.remove('capturing'); b.textContent = '修改'; });
+  capturingKeyAction = btn.dataset.action;
+  btn.classList.add('capturing');
+  btn.textContent = '按键…';
+  toast('请按下新按键（Esc 取消）');
+}
+
+function finishKeyCapture(key) {
+  if (!capturingKeyAction) return;
+  const action = capturingKeyAction;
+  capturingKeyAction = null;
+  if (key === undefined) { renderKeySettings(); toast('已取消按键捕获'); return; }
+  S.settings.keys[action] = key ? [key] : [];
+  saveSettings();
+  renderKeySettings();
+  toast(key ? '按键已更新' : '已清除该按键');
+}
+
 /* ---------- 启动 ---------- */
 function syncSettingsUI() {
   $('#opt-shuffle').checked = S.settings.shuffle;
@@ -1234,6 +1593,7 @@ function syncSettingsUI() {
   $('#wl-group').checked = !!S.settings.listGroupByUnit;
   S.listSize = LIST_SIZES.includes(+S.settings.listSize) ? +S.settings.listSize : 50;
   $('#wl-size').value = String(S.listSize);
+  renderKeySettings();
 }
 
 async function init() {
@@ -1241,7 +1601,7 @@ async function init() {
   const st = store();
   S.known = st.known || {};
   S.starred = st.starred || {};
-  Object.assign(S.settings, st.settings || {});
+  mergeSettings(st.settings || {});
   // 一次性迁移: 默认口音改为英音(之后用户手动切换会被尊重)
   if (!st.accentV2) {
     S.settings.accent = 'uk';
@@ -1268,6 +1628,7 @@ async function init() {
     getStarred: () => S.starred,
     getGames: () => store().games || {},
     saveGames: (games) => saveStore({ ...store(), games }),
+    matchKey: (action, e) => keyMatches(action, e),
     openReading: () => show('reading'),
   });
   if (window.WordReading) WordReading.init({
@@ -1277,6 +1638,8 @@ async function init() {
     fetchYoudao,
     getWords: () => S.words,
     getKnown: () => S.known,
+    wordLocation,
+    matchKey: (action, e) => keyMatches(action, e),
     openGame: () => show('game'),
     getArticles: () => store().articles || [],
     saveArticles: (list) => saveStore({ ...store(), articles: list }),

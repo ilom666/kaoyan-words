@@ -8,6 +8,7 @@
   POST /api/state   保存应用状态  body: 状态对象(与现有合并)
   POST /api/save    批量保存词条修改  body: {"changes":[{"id":1,"patch":{...}}]}
   POST /api/add     新增词条          body: {词条对象}
+  POST /api/reorder 重排同一课内的词内序号 body: {"ids":[该课全部词条ID的新顺序]}
   POST /api/delete  删除词条          body: {"id": 3}
   POST /api/reset   恢复上次备份
   POST /api/ai/reading  用已学单词生成阅读理解(DeepSeek 代理)
@@ -44,7 +45,7 @@ def db_conn():
 
 # 词库结构化列: (字段名, SQL 类型) —— 数组字段用 JSON 文本列保存
 WORD_COLUMNS = [
-    ('id', 'INTEGER'), ('word', 'TEXT'), ('phonetic', 'TEXT'), ('phonetic_uk', 'TEXT'),
+    ('id', 'INTEGER'), ('seq', 'INTEGER'), ('word', 'TEXT'), ('phonetic', 'TEXT'), ('phonetic_uk', 'TEXT'),
     ('meaning', 'TEXT'), ('hints', 'TEXT'), ('example_en', 'TEXT'), ('example_zh', 'TEXT'),
     ('derivatives', 'TEXT'), ('synonyms', 'TEXT'), ('phrases', 'TEXT'), ('compare', 'TEXT'),
     ('notes', 'TEXT'), ('no', 'TEXT'), ('group', 'TEXT'), ('related', 'TEXT'),
@@ -65,7 +66,7 @@ def word_to_row(w):
         if name in JSON_FIELDS:
             # 数组列: 列表存 JSON 文本; None 保留 NULL
             v = json.dumps(v, ensure_ascii=False) if isinstance(v, list) else v
-        elif name == 'id':
+        elif name in ('id', 'seq'):
             v = int(v) if v not in (None, '') else 0
         elif name in ('page', 'unit', 'lesson') and v not in (None, ''):
             try:
@@ -95,6 +96,70 @@ def row_to_word(r):
     return w
 
 
+GROUP_ORDER = ['A–C', 'D–F', 'G–J', 'K–O', 'P–S', 'T–Z', '其他']
+
+
+def letter_group(c):
+    c = (c or 'a')[0].lower()
+    if not ('a' <= c <= 'z'):
+        return '其他'
+    if c <= 'c':
+        return 'A–C'
+    if c <= 'f':
+        return 'D–F'
+    if c <= 'j':
+        return 'G–J'
+    if c <= 'o':
+        return 'K–O'
+    if c <= 's':
+        return 'P–S'
+    return 'T–Z'
+
+
+def lesson_key(w):
+    part = str(w.get('part') or '1')
+    if part == '3':
+        return '3.' + letter_group(w.get('word'))
+    return f'{part}.{w.get("lesson") or 0}'
+
+
+def lesson_sort_key(w):
+    part = str(w.get('part') or '1')
+    try:
+        pnum = int(float(part))
+    except (TypeError, ValueError):
+        pnum = 1
+    seq = w.get('seq') or 0
+    wid = w.get('id') or 0
+    if pnum == 3:
+        group = lesson_key(w).split('.', 1)[1]
+        gi = GROUP_ORDER.index(group) if group in GROUP_ORDER else len(GROUP_ORDER)
+        return (3, gi, seq, wid)
+    try:
+        lesson = float(w.get('lesson') or 0)
+    except (TypeError, ValueError):
+        lesson = 0
+    return (pnum, lesson, seq, wid)
+
+
+def rows_in_lesson(con, key):
+    return [r for r in (dict(x) for x in con.execute('SELECT * FROM words'))
+            if lesson_key(r) == key]
+
+
+def renumber_seq(con, key=None):
+    """按当前顺序重写课内序号，key=None 时重排全部课程。"""
+    rows = rows_in_lesson(con, key) if key else [dict(r) for r in con.execute('SELECT * FROM words')]
+    groups = {}
+    for r in rows:
+        groups.setdefault(lesson_key(r), []).append(r)
+    for items in groups.values():
+        items.sort(key=lambda x: (x.get('seq') or 0, x.get('id') or 0))
+        for i, item in enumerate(items, 1):
+            if item.get('seq') != i:
+                con.execute('UPDATE words SET seq=? WHERE id=?', (i, item['id']))
+
+
 def init_db():
     """建结构化表；从旧 JSON 列或 words.json 种子迁移。"""
     with db_conn() as con:
@@ -113,13 +178,17 @@ def init_db():
                 seed = json.load(f)
             con.executemany(WORD_INSERT, [word_to_row(w) for w in seed.get('words', []) if w.get('id')])
             con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', seed.get('source', '')))
+        if 'seq' not in [r['name'] for r in con.execute('PRAGMA table_info(words)')]:
+            con.execute('ALTER TABLE words ADD COLUMN seq INTEGER NOT NULL DEFAULT 0')
+        renumber_seq(con)
         con.execute('INSERT OR IGNORE INTO state(id,data) VALUES(1,?)', ('{}',))
 
 
 def load_data():
     with db_conn() as con:
-        words = [row_to_word(r) for r in con.execute('SELECT * FROM words ORDER BY id')]
+        words = [row_to_word(r) for r in con.execute('SELECT * FROM words')]
         src = con.execute("SELECT value FROM meta WHERE key='source'").fetchone()
+    words.sort(key=lesson_sort_key)
     return {'source': src['value'] if src else '', 'words': words}
 
 
@@ -128,6 +197,7 @@ def save_data(data):
         con.execute('DELETE FROM words')
         con.executemany(WORD_INSERT, [word_to_row(w) for w in data.get('words', []) if w.get('id')])
         con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', data.get('source', '')))
+        renumber_seq(con)
 
 
 def load_state():
@@ -707,11 +777,24 @@ class Handler(SimpleHTTPRequestHandler):
             if path == '/api/save':
                 changes = self._body().get('changes', [])
                 with db_conn() as con:
+                    affected = set()
                     for ch in changes:
                         wid, patch = ch.get('id'), ch.get('patch', {})
-                        patch = {k: v for k, v in patch.items() if k in WORD_FIELDS and k != 'id'}
+                        patch = {k: v for k, v in patch.items()
+                                 if k in WORD_FIELDS and k not in ('id', 'seq')}
                         if not patch or wid is None:
                             continue
+                        old = con.execute('SELECT * FROM words WHERE id=?', (wid,)).fetchone()
+                        if old:
+                            old = dict(old)
+                            old_key = lesson_key(old)
+                            merged = dict(old)
+                            merged.update(patch)
+                            new_key = lesson_key(merged)
+                            if new_key != old_key:
+                                group = rows_in_lesson(con, new_key)
+                                patch['seq'] = max((x.get('seq') or 0) for x in group) + 1 if group else 1
+                                affected.update((old_key, new_key))
                         sets = ', '.join(f'"{k}"=?' for k in patch)
                         vals = []
                         for k in patch:
@@ -720,29 +803,65 @@ class Handler(SimpleHTTPRequestHandler):
                                 v = json.dumps(v if isinstance(v, list) else [], ensure_ascii=False)
                             vals.append(v)
                         con.execute(f'UPDATE words SET {sets} WHERE id=?', vals + [wid])
+                    for key in affected:
+                        renumber_seq(con, key)
                 self._json({'ok': True, 'saved': len(changes)})
             elif path == '/api/add':
                 w = self._body()
                 after = w.get('after')
                 with db_conn() as con:
                     new_id = con.execute('SELECT COALESCE(MAX(id),0)+1 FROM words').fetchone()[0]
-                    row = word_to_row(dict(w, id=new_id))
+                    new_row = dict(zip(WORD_FIELDS, word_to_row(dict(w, id=new_id, seq=0))))
+                    key = lesson_key(new_row)
+                    group = rows_in_lesson(con, key)
+                    group.sort(key=lambda x: (x.get('seq') or 0, x.get('id') or 0))
+                    insert_at = len(group)
                     if after:
-                        # 顺序由 id 决定: 读出全部行, 在指定位置插入后重编号写回
-                        after_id = int(after)
-                        rows = [dict(r) for r in con.execute('SELECT * FROM words ORDER BY id')]
-                        pos = next((i for i, x in enumerate(rows) if x['id'] == after_id), None)
-                        insert_at = (pos + 1) if pos is not None else len(rows)
-                        new_row = dict(zip(WORD_FIELDS, row))
-                        rows.insert(insert_at, new_row)
-                        con.execute('DELETE FROM words')
-                        for i, x in enumerate(rows, 1):
-                            x['id'] = i
-                            con.execute(WORD_INSERT, word_to_row(x))
-                        new_id = insert_at + 1
-                    else:
-                        con.execute(WORD_INSERT, row)
-                self._json({'ok': True, 'id': new_id})
+                        try:
+                            after_id = int(after)
+                            pos = next((i for i, x in enumerate(group) if x['id'] == after_id), None)
+                            if pos is not None:
+                                insert_at = pos + 1
+                        except (TypeError, ValueError):
+                            pass
+                    group.insert(insert_at, new_row)
+                    cols = ', '.join(chr(34) + k + chr(34) + '=?' for k in WORD_FIELDS if k != 'id')
+                    for i, row in enumerate(group, 1):
+                        row['seq'] = i
+                        vals = dict(zip(WORD_FIELDS, word_to_row(row)))
+                        if row['id'] == new_id:
+                            con.execute(WORD_INSERT, tuple(vals[k] for k in WORD_FIELDS))
+                        else:
+                            con.execute(f'UPDATE words SET {cols} WHERE id=?',
+                                        [vals[k] for k in WORD_FIELDS if k != 'id'] + [row['id']])
+                self._json({'ok': True, 'id': new_id, 'seq': insert_at + 1})
+            elif path == '/api/reorder':
+                ids = self._body().get('ids')
+                if not isinstance(ids, list) or not ids or len(ids) != len(set(ids)):
+                    self._json({'ok': False, 'error': '顺序参数无效'}, 400)
+                else:
+                    try:
+                        ids = [int(x) for x in ids]
+                    except (TypeError, ValueError):
+                        self._json({'ok': False, 'error': '顺序参数无效'}, 400)
+                        return
+                    with db_conn() as con:
+                        marks = ', '.join('?' for _ in ids)
+                        rows = [dict(r) for r in con.execute(f'SELECT * FROM words WHERE id IN ({marks})', ids)]
+                        if len(rows) != len(ids):
+                            self._json({'ok': False, 'error': '词条不存在'}, 400)
+                            return
+                        keys = {lesson_key(r) for r in rows}
+                        if len(keys) != 1:
+                            self._json({'ok': False, 'error': '只能调整同一课内的顺序'}, 400)
+                            return
+                        key = next(iter(keys))
+                        if len(rows) != len(rows_in_lesson(con, key)):
+                            self._json({'ok': False, 'error': '顺序需包含该课全部词条'}, 400)
+                            return
+                        for i, wid in enumerate(ids, 1):
+                            con.execute('UPDATE words SET seq=? WHERE id=?', (i, wid))
+                    self._json({'ok': True})
             elif path == '/api/swap':
                 body = self._body()
                 a, b = body.get('idA'), body.get('idB')
@@ -754,19 +873,23 @@ class Handler(SimpleHTTPRequestHandler):
                         rb = con.execute('SELECT * FROM words WHERE id=?', (b,)).fetchone()
                         if not ra or not rb:
                             self._json({'ok': False, 'error': '词条不存在'}, 400)
+                            return
+                        ra, rb = dict(ra), dict(rb)
+                        if lesson_key(ra) != lesson_key(rb):
+                            self._json({'ok': False, 'error': '只能交换同一课内的词条'}, 400)
                         else:
-                            wa = {k: ra[k] for k in WORD_FIELDS}
-                            wb = {k: rb[k] for k in WORD_FIELDS}
-                            # 交换字段内容(id 不变, 保证 ORDER BY id 的显示顺序改变)
-                            con.execute(f"UPDATE words SET {', '.join(chr(34)+k+chr(34)+'=?' for k in WORD_FIELDS if k!='id')} WHERE id=?",
-                                        [wb[k] for k in WORD_FIELDS if k != 'id'] + [a])
-                            con.execute(f"UPDATE words SET {', '.join(chr(34)+k+chr(34)+'=?' for k in WORD_FIELDS if k!='id')} WHERE id=?",
-                                        [wa[k] for k in WORD_FIELDS if k != 'id'] + [b])
-                            self._json({'ok': True})
+                            con.execute('UPDATE words SET seq=? WHERE id=?', (rb['seq'], a))
+                            con.execute('UPDATE words SET seq=? WHERE id=?', (ra['seq'], b))
+                    self._json({'ok': True})
             elif path == '/api/delete':
                 wid = self._body().get('id')
                 with db_conn() as con:
+                    old = con.execute('SELECT * FROM words WHERE id=?', (wid,)).fetchone()
+                    old = dict(old) if old else None
+                    key = lesson_key(old) if old else None
                     con.execute('DELETE FROM words WHERE id=?', (wid,))
+                    if key:
+                        renumber_seq(con, key)
                 self._json({'ok': True})
             elif path == '/api/reset':
                 # 从首次导入种子重建词库（SQLite 下不再有 words.backup.json）

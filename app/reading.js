@@ -46,14 +46,15 @@
   function onHide() { closePop(); }
 
   function onKey(e) {
-    if (e.key === 'Escape') {
+    const hit = (action) => D.matchKey ? D.matchKey(action, e) : false;
+    if (hit('readingBack')) {
       e.preventDefault();
       if (R.pop) { closePop(); return true; }
       if (R.phase !== 'menu') { openMenu(); return true; }
       D.openGame();
       return true;
     }
-    if (e.key === 'Enter' && R.phase === 'result') { e.preventDefault(); generateReading(); return true; }
+    if (hit('readingAgain') && R.phase === 'result') { e.preventDefault(); generateReading(); return true; }
     return false;
   }
 
@@ -394,10 +395,7 @@
     const direct = words.find(w => String(w.word || '').trim().toLowerCase() === word);
     const hit = direct || words.find(w => normalizeWord(w.word) === normalizeWord(word));
     if (hit && String(hit.meaning || '').trim()) {
-      const unit = hit.unit;
-      const lesson = hit.lesson;
-      let loc = '';
-      if (unit || lesson) loc = `${unit ? '第' + unit + '单元' : ''}${unit && lesson ? ' · ' : ''}${lesson ? '第' + lesson + '课' : ''}`;
+      const loc = D.wordLocation ? D.wordLocation(hit) : '';
       return {
         meaning: String(hit.meaning).trim(),
         phonetic: hit.phonetic_uk || hit.phonetic || '',

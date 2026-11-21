@@ -410,18 +410,19 @@
   }
 
   function onKey(e) {
+    const hit = (action) => D.matchKey ? D.matchKey(action, e) : false;
     if (G.phase === 'playing') {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return false;
-      if (['1', '2', '3', '4'].includes(e.key)) {
-        e.preventDefault(); answer(+e.key - 1); return true;
+      for (let i = 1; i <= 4; i++) {
+        if (hit('game' + i)) { e.preventDefault(); answer(i - 1); return true; }
       }
-      if (e.key === 'Escape') { e.preventDefault(); abort(); return true; }
-      if (e.key.toLowerCase() === 'e') { e.preventDefault(); speakCurrent(); return true; }
+      if (hit('gameQuit')) { e.preventDefault(); abort(); return true; }
+      if (hit('gameSpeak')) { e.preventDefault(); speakCurrent(); return true; }
       return true; // 游戏进行中吞掉其他键，避免误触主程序快捷键
     }
     if (G.phase === 'result') {
-      if (e.key === 'Escape') { e.preventDefault(); G.phase = 'menu'; renderMenu(); return true; }
-      if (e.key === 'Enter') { e.preventDefault(); if (G._advTimer) clearTimeout(G._advTimer); start(); return true; }
+      if (hit('gameQuit')) { e.preventDefault(); G.phase = 'menu'; renderMenu(); return true; }
+      if (hit('gameAgain')) { e.preventDefault(); if (G._advTimer) clearTimeout(G._advTimer); start(); return true; }
       return true;
     }
     return false;

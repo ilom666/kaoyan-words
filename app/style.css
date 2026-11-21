@@ -70,6 +70,14 @@ body {
 .top-actions { display: flex; gap: 6px; align-items: center; }
 .save-hint { font-size: 12px; color: var(--ok); opacity: 0; transition: opacity .3s; }
 .save-hint.show { opacity: 1; }
+.io-menu { position: relative; flex-shrink: 0; }
+.io-trigger { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.io-caret { font-size: 11px; line-height: 1; transition: transform .16s; }
+.io-menu.open .io-caret { transform: rotate(180deg); }
+.io-dropdown { position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; min-width: 176px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.io-group-label { padding: 6px 10px 4px; font-size: 11px; font-weight: 700; color: var(--ink-2); opacity: .8; }
+.io-dropdown button { display: block; width: 100%; border: 0; background: transparent; color: var(--ink); font-size: 13px; text-align: left; padding: 8px 10px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.io-dropdown button:hover, .io-dropdown button:focus-visible { background: var(--brand-soft); color: var(--brand); outline: none; }
 
 /* ---- 通用 ---- */
 .view { padding-top: 18px; }
@@ -218,17 +226,19 @@ body.studying #app { padding-bottom: 0; }
 .mg-tip { font-size: 12px; color: var(--ink-2); background: var(--bg-2); border: 1px dashed var(--line); border-radius: 10px; padding: 8px 12px; margin: -2px 0 12px; }
 .mg-tip b { color: var(--brand); }
 .mg-list { display: flex; flex-direction: column; gap: 8px; }
-.mg-list .mg-item { user-select: none; }
-.mg-item { border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; display: flex; gap: 10px; align-items: center; cursor: pointer; transition: .16s; }
+.mg-list .mg-item { user-select: none; touch-action: pan-y; }
+.mg-item { border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; display: flex; gap: 10px; align-items: center; cursor: grab; transition: border-color .16s, background .16s, box-shadow .16s; }
 .mg-item:hover { border-color: var(--brand-2); background: var(--brand-soft); }
 .mg-item.selected { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 2px 10px color-mix(in srgb, var(--brand) 16%, transparent); }
-.mg-item.swap-picked { border-width: 2px; }
-.mg-item.swap-a { border-color: var(--ok); background: var(--ok-soft); }
-.mg-item.swap-b { border-color: var(--gold); background: var(--gold-soft); }
-.swap-tag { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: var(--ink-2); font-size: 12px; font-weight: 800; flex-shrink: 0; }
-.swap-a .swap-tag { background: var(--ok); color: #fff; }
-.swap-b .swap-tag { background: var(--gold); color: #fff; }
-#mg-swap-mode.active { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+.mg-item.mg-pressing { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+.mi-drag { color: var(--ink-2); opacity: .55; font-size: 17px; line-height: 1; flex-shrink: 0; }
+.mi-seq { color: var(--brand); font-size: 12px; font-weight: 800; min-width: 30px; flex-shrink: 0; }
+.mg-item.mg-pressing .mi-drag, .mg-item.mg-dragging .mi-drag { color: var(--brand); opacity: 1; }
+.mg-drop-placeholder { border: 2px dashed var(--brand); border-radius: 12px; background: color-mix(in srgb, var(--brand-soft) 70%, transparent); }
+.mg-item.mg-dragging { position: fixed; z-index: 1000; margin: 0; pointer-events: none; opacity: .95; border-color: var(--brand); box-shadow: 0 14px 34px rgba(35, 45, 90, .22); cursor: grabbing; }
+.mg-drag-cancel { position: fixed; left: 50%; bottom: 24px; z-index: 1001; transform: translateX(-50%); padding: 12px 22px; border: 1.5px dashed var(--bad); border-radius: 999px; background: var(--panel); color: var(--bad); font-size: 13px; font-weight: 800; box-shadow: var(--shadow); pointer-events: none; transition: .16s; }
+.mg-drag-cancel.over { background: var(--bad); color: #fff; transform: translateX(-50%) scale(1.06); }
+body.mg-drag-active, body.mg-drag-active * { cursor: grabbing !important; user-select: none !important; }
 .mi-edit { border: 0; background: transparent; cursor: pointer; font-size: 15px; color: var(--ink-2); padding: 4px 8px; border-radius: 8px; flex-shrink: 0; transition: .15s; }
 .mi-edit:hover { color: var(--brand); background: var(--brand-soft); }
 .mg-item .mi-word { font-weight: 800; font-size: 15.5px; min-width: 110px; }
@@ -238,6 +248,20 @@ body.studying #app { padding-bottom: 0; }
 .mg-item .mi-badge.k { background: var(--ok-soft); color: var(--ok); }
 .mg-item .mi-badge.u { background: var(--bad-soft); color: var(--bad); }
 .mg-pager { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 16px; font-size: 13px; color: var(--ink-2); }
+
+/* ---- 按键设置 ---- */
+.settings-hint { font-size: 12px; line-height: 1.7; color: var(--ink-2); margin: 0 0 12px; }
+.settings-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+.keys-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.key-group { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg-2); }
+.key-group h3 { margin: 0 0 8px; font-size: 14px; color: var(--brand); }
+.key-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px dashed var(--line); }
+.key-row:first-of-type { border-top: 0; }
+.key-label { flex: 1; font-size: 13px; }
+.key-values { display: flex; align-items: center; gap: 5px; }
+.key-values kbd { font-size: 12px; padding: 2px 8px; }
+.key-bind { font-size: 12px; padding: 5px 10px; flex-shrink: 0; }
+.key-bind.capturing { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
 
 /* ---- 单词列表(已收藏 / 不认识) ---- */
 .wl-options { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: -2px 0 12px; padding: 9px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 11px; }
