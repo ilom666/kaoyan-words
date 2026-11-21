@@ -5,7 +5,33 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const LS_KEY = 'shuacidan_progress_v1';
+
+// 应用状态存服务端 SQLite；内存镜像让同步读写点无需大改，写回做 debounce
+let STATE = {};
+let _stateTimer = null;
+let _stateDirty = false;
+
+async function loadState() {
+  try {
+    const r = await fetch('/api/state', { cache: 'no-store' });
+    STATE = await r.json() || {};
+  } catch (e) { STATE = {}; }
+}
+function store() { return STATE; }
+function saveStore(obj) {
+  STATE = obj || {};
+  _stateDirty = true;
+  clearTimeout(_stateTimer);
+  _stateTimer = setTimeout(flushState, 300);
+}
+async function flushState() {
+  if (!_stateDirty) return;
+  _stateDirty = false;
+  try {
+    await fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(STATE) });
+  } catch (e) { /* 离线时保留内存状态, 下次保存会重试 */ }
+}
+window.addEventListener('beforeunload', () => { if (_stateDirty) flushState(); });
 
 function toast(msg, ms = 1800) {
   const t = $('#toast');
@@ -14,12 +40,6 @@ function toast(msg, ms = 1800) {
   clearTimeout(t._tm);
   t._tm = setTimeout(() => t.hidden = true, ms);
 }
-
-function store() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
-  catch { return {}; }
-}
-function saveStore(obj) { localStorage.setItem(LS_KEY, JSON.stringify(obj)); }
 
 /* ---------- 全局状态 ---------- */
 const S = {
@@ -1009,6 +1029,23 @@ async function importJson(file) {
   } catch (e) { toast('导入失败: ' + e.message); }
 }
 
+function exportExcel() { window.location.href = '/api/export.xlsx'; }
+function downloadExcelTemplate() { window.location.href = '/api/export.xlsx?template=1'; }
+async function importExcel(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const res = await fetch('/api/import.xlsx', {
+      method: 'POST', headers: { 'Content-Type': 'application/vnd.ms-excel' }, body: buf,
+    });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || '导入失败');
+    toast(`Excel 导入完成：更新 ${j.updated} · 新增 ${j.added} · 跳过 ${j.skipped}`);
+    await loadWords();
+    renderHome();
+    if (!$('#view-words').hidden) renderWordList();
+  } catch (e) { toast('Excel 导入失败: ' + e.message, 4000); }
+}
+
 /* ---------- 事件绑定 ---------- */
 function bind() {
   $$('.nav-btn').forEach(b => b.onclick = () => {
@@ -1113,6 +1150,10 @@ function bind() {
   $('#btn-export').onclick = exportJson;
   $('#btn-import').onclick = () => $('#import-file').click();
   $('#import-file').onchange = (e) => { if (e.target.files[0]) importJson(e.target.files[0]); e.target.value = ''; };
+  $('#btn-export-xlsx').onclick = exportExcel;
+  $('#btn-template-xlsx').onclick = downloadExcelTemplate;
+  $('#btn-import-xlsx').onclick = () => $('#import-xlsx-file').click();
+  $('#import-xlsx-file').onchange = (e) => { if (e.target.files[0]) importExcel(e.target.files[0]); e.target.value = ''; };
 
   $('#modal-close').onclick = $('#modal-cancel').onclick = () => $('#modal-mask').hidden = true;
   $('#modal-youdao').onclick = async () => {
@@ -1196,6 +1237,7 @@ function syncSettingsUI() {
 }
 
 async function init() {
+  await loadState();
   const st = store();
   S.known = st.known || {};
   S.starred = st.starred || {};
@@ -1224,6 +1266,8 @@ async function init() {
     getWords: () => S.words,
     getKnown: () => S.known,
     getStarred: () => S.starred,
+    getGames: () => store().games || {},
+    saveGames: (games) => saveStore({ ...store(), games }),
     openReading: () => show('reading'),
   });
   if (window.WordReading) WordReading.init({
@@ -1234,6 +1278,8 @@ async function init() {
     getWords: () => S.words,
     getKnown: () => S.known,
     openGame: () => show('game'),
+    getArticles: () => store().articles || [],
+    saveArticles: (list) => saveStore({ ...store(), articles: list }),
   });
   try {
     await loadWords();

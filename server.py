@@ -2,23 +2,31 @@
 """刷单词 Web 应用服务器（零依赖，Python 标准库实现）
 用法: python3 server.py [端口]   默认 8765
 接口:
-  GET  /api/words   读取词库 data/words.json
+  存储: SQLite data/app.db（词库 + 应用状态）；data/words.json 仅作首次导入种子
+  GET  /api/words   读取词库
+  GET  /api/state   读取应用状态(进度/收藏/设置/游戏记录/文章)
+  POST /api/state   保存应用状态  body: 状态对象(与现有合并)
   POST /api/save    批量保存词条修改  body: {"changes":[{"id":1,"patch":{...}}]}
   POST /api/add     新增词条          body: {词条对象}
   POST /api/delete  删除词条          body: {"id": 3}
   POST /api/reset   恢复上次备份
   POST /api/ai/reading  用已学单词生成阅读理解(DeepSeek 代理)
                      body: {"topic","length","questionCount","words":[...],"apiKey"}
+  GET  /api/export.xlsx 导出词库为 Excel(.xlsx)
+  POST /api/import.xlsx 从 Excel(.xlsx) 导入/更新词库 (body: 原始 xlsx 字节)
 """
-import json, os, re, shutil, sys, urllib.error
+import json, os, re, shutil, sys, urllib.error, io, zipfile, sqlite3
+import xml.etree.ElementTree as ET
 import urllib.request, urllib.parse
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 APP_DIR = os.path.join(ROOT, 'app')
-DATA_FILE = os.path.join(ROOT, 'data', 'words.json')
-BACKUP_FILE = os.path.join(ROOT, 'data', 'words.backup.json')
+DATA_DIR = os.path.join(ROOT, 'data')
+SEED_FILE = os.path.join(DATA_DIR, 'words.json')       # 首次导入种子(不再被写入)
+DB_FILE = os.path.join(DATA_DIR, 'app.db')             # SQLite: 词库 + 应用状态
+EXPORT_FILE = os.path.join(DATA_DIR, 'words.export.json')  # JSON 导出用(按需生成)
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 # DeepSeek 配置：密钥只从环境变量或单次请求体读取，不写入任何文件
 DEEPSEEK_URL = os.environ.get('DEEPSEEK_API_BASE', 'https://api.deepseek.com/chat/completions')
@@ -27,19 +35,56 @@ DEEPSEEK_TIMEOUT = 90
 MAX_AI_WORDS = 300
 
 
+def db_conn():
+    os.makedirs(DATA_DIR, exist_ok=True)
+    con = sqlite3.connect(DB_FILE)
+    con.row_factory = sqlite3.Row
+    return con
+
+
+def init_db():
+    """建表；首次运行时把 words.json 种子导入 SQLite。"""
+    with db_conn() as con:
+        con.execute('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)')
+        con.execute('CREATE TABLE IF NOT EXISTS words (id INTEGER PRIMARY KEY, data TEXT NOT NULL)')
+        con.execute('CREATE TABLE IF NOT EXISTS state (id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL)')
+        n = con.execute('SELECT COUNT(*) FROM words').fetchone()[0]
+        if n == 0 and os.path.exists(SEED_FILE):
+            with open(SEED_FILE, encoding='utf-8') as f:
+                seed = json.load(f)
+            con.executemany('INSERT OR REPLACE INTO words(id,data) VALUES(?,?)',
+                            [(int(w['id']), json.dumps(w, ensure_ascii=False)) for w in seed.get('words', []) if w.get('id')])
+            con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', seed.get('source', '')))
+        con.execute('INSERT OR IGNORE INTO state(id,data) VALUES(1,?)', ('{}',))
+
+
 def load_data():
-    with open(DATA_FILE, encoding='utf-8') as f:
-        return json.load(f)
+    with db_conn() as con:
+        words = [json.loads(r['data']) for r in con.execute('SELECT data FROM words ORDER BY id')]
+        src = con.execute("SELECT value FROM meta WHERE key='source'").fetchone()
+    return {'source': src['value'] if src else '', 'words': words}
 
 
 def save_data(data):
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    if os.path.exists(DATA_FILE):
-        shutil.copy2(DATA_FILE, BACKUP_FILE)
-    tmp = DATA_FILE + '.tmp'
-    with open(tmp, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, DATA_FILE)
+    with db_conn() as con:
+        con.execute('DELETE FROM words')
+        con.executemany('INSERT INTO words(id,data) VALUES(?,?)',
+                        [(int(w['id']), json.dumps(w, ensure_ascii=False)) for w in data.get('words', []) if w.get('id')])
+        con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', data.get('source', '')))
+
+
+def load_state():
+    with db_conn() as con:
+        row = con.execute('SELECT data FROM state WHERE id=1').fetchone()
+    try:
+        return json.loads(row['data']) if row else {}
+    except (ValueError, TypeError):
+        return {}
+
+
+def save_state(obj):
+    with db_conn() as con:
+        con.execute('UPDATE state SET data=? WHERE id=1', (json.dumps(obj, ensure_ascii=False),))
 
 
 def youdao_lookup(word):
@@ -236,6 +281,269 @@ def deepseek_reading(body):
     }
 
 
+# ===== Excel(.xlsx) 导入导出 —— 仅用标准库 zipfile + XML =====
+# 模板表头: (显示名, 数据字段, 类型)
+XLSX_COLUMNS = [
+    ('ID', 'id', 'id'),
+    ('单词', 'word', 'str'),
+    ('美音音标', 'phonetic', 'str'),
+    ('英音音标', 'phonetic_uk', 'str'),
+    ('释义', 'meaning', 'str'),
+    ('记忆提示', 'hints', 'hints'),
+    ('英文例句', 'example_en', 'str'),
+    ('中文例句', 'example_zh', 'str'),
+    ('派生词', 'derivatives', 'list'),
+    ('同义词', 'synonyms', 'str'),
+    ('短语', 'phrases', 'list'),
+    ('形近对比', 'compare', 'str'),
+    ('备注', 'notes', 'list'),
+    ('编号', 'no', 'str'),
+    ('分组', 'group', 'str'),
+    ('相关词', 'related', 'list'),
+    ('页码', 'page', 'num'),
+    ('Unit', 'unit', 'num'),
+    ('Lesson', 'lesson', 'num'),
+    ('Part', 'part', 'num'),
+    ('Part标题', 'part_title', 'str'),
+    ('疑似标记', 'suspect', 'str'),
+]
+XLSX_HEADERS = [c[0] for c in XLSX_COLUMNS]
+NS_MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
+HINT_TYPES = ('谐音', '联想', '词根词缀', '形近对照', '记忆', '助记')
+
+
+def _col_name(n):
+    s = ''
+    n += 1
+    while n:
+        n, r = divmod(n - 1, 26)
+        s = chr(65 + r) + s
+    return s
+
+
+def _col_index(ref):
+    m = re.match(r'([A-Z]+)', ref or '')
+    if not m:
+        return -1
+    n = 0
+    for ch in m.group(1):
+        n = n * 26 + (ord(ch) - 64)
+    return n - 1
+
+
+def _xml_escape(s):
+    return (str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;'))
+
+
+def _hints_to_cell(v):
+    parts = []
+    for h in (v if isinstance(v, list) else []):
+        if isinstance(h, dict):
+            t, x = str(h.get('type') or '').strip(), str(h.get('text') or '').strip()
+            parts.append((t + '：' + x) if t else x)
+        else:
+            parts.append(str(h).strip())
+    return '；'.join(p for p in parts if p)
+
+
+def _list_to_cell(v):
+    if not isinstance(v, list):
+        return '' if v in (None, '') else str(v)
+    return '；'.join(str(x).strip() for x in v if str(x).strip())
+
+
+def build_xlsx(rows):
+    """rows: 二维字符串数组，第一行为表头。返回 xlsx 字节。"""
+    sheet_rows = []
+    for ri, row in enumerate(rows, 1):
+        cells = []
+        for ci, val in enumerate(row):
+            ref = _col_name(ci) + str(ri)
+            cells.append(f'<c r="{ref}" t="inlineStr"><is><t xml:space="preserve">{_xml_escape(val)}</t></is></c>')
+        sheet_rows.append(f'<row r="{ri}">{"".join(cells)}</row>')
+    sheet = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+             f'<worksheet xmlns="{NS_MAIN}"><sheetData>{"".join(sheet_rows)}</sheetData></worksheet>')
+    ct = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+          '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+          '<Default Extension="xml" ContentType="application/xml"/>'
+          '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+          '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+          '</Types>')
+    rels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            '</Relationships>')
+    wb = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+          f'<workbook xmlns="{NS_MAIN}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+          '<sheets><sheet name="词库" sheetId="1" r:id="rId1"/></sheets></workbook>')
+    wb_rels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+               '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+               '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+               '</Relationships>')
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as z:
+        z.writestr('[Content_Types].xml', ct)
+        z.writestr('_rels/.rels', rels)
+        z.writestr('xl/workbook.xml', wb)
+        z.writestr('xl/_rels/workbook.xml.rels', wb_rels)
+        z.writestr('xl/worksheets/sheet1.xml', sheet)
+    return buf.getvalue()
+
+
+def parse_xlsx(raw):
+    """读取 xlsx 第一张工作表，返回二维字符串数组。"""
+    z = zipfile.ZipFile(io.BytesIO(raw))
+    names = z.namelist()
+    shared = []
+    if 'xl/sharedStrings.xml' in names:
+        root = ET.fromstring(z.read('xl/sharedStrings.xml'))
+        for si in root.findall(f'{{{NS_MAIN}}}si'):
+            shared.append(''.join(t.text or '' for t in si.iter(f'{{{NS_MAIN}}}t')))
+    sheet_name = next((n for n in names if re.match(r'xl/worksheets/sheet\d+\.xml$', n)), None)
+    if not sheet_name:
+        raise ValueError('Excel 中未找到工作表')
+    root = ET.fromstring(z.read(sheet_name))
+    rows = []
+    for row in root.iter(f'{{{NS_MAIN}}}row'):
+        cells, maxi = {}, -1
+        for c in row.findall(f'{{{NS_MAIN}}}c'):
+            idx = _col_index(c.get('r') or '')
+            if idx < 0:
+                continue
+            t = c.get('t')
+            val = ''
+            if t == 'inlineStr':
+                is_el = c.find(f'{{{NS_MAIN}}}is')
+                if is_el is not None:
+                    val = ''.join(x.text or '' for x in is_el.iter(f'{{{NS_MAIN}}}t'))
+            else:
+                v = c.find(f'{{{NS_MAIN}}}v')
+                if v is not None:
+                    val = v.text or ''
+                    if t == 's':
+                        try:
+                            val = shared[int(val)]
+                        except (ValueError, IndexError):
+                            pass
+            cells[idx] = val
+            maxi = max(maxi, idx)
+        rows.append([cells.get(i, '') for i in range(maxi + 1)])
+    return rows
+
+
+def xlsx_export_rows(data):
+    rows = [XLSX_HEADERS[:]]
+    for w in data.get('words', []):
+        row = []
+        for _name, key, kind in XLSX_COLUMNS:
+            v = w.get(key, '')
+            if kind == 'hints':
+                v = _hints_to_cell(v)
+            elif kind == 'list':
+                v = _list_to_cell(v)
+            row.append('' if v is None else str(v))
+        rows.append(row)
+    return rows
+
+
+def xlsx_template_rows():
+    example = ['（留空则新增）', 'example', '/ˈɪɡzɑːmpl/', '/ˈeɡzɑːmpl/', 'n. 例子；实例',
+               '谐音：例句；联想：ex+ample', 'This is an example.', '这是一个例子。',
+               'examples；exemplify', 'instance', 'for example；set an example', 'ex- 向外',
+               '示例备注', '001', '示例分组', '相关词一；相关词二', '12', '1', '1', '1', '示例', '']
+    return [XLSX_HEADERS[:], example]
+
+
+def _cell_to_num(s):
+    s = str(s or '').strip()
+    if not s:
+        return ''
+    return int(s) if re.fullmatch(r'-?\d+', s) else s
+
+
+def _cell_to_hints(s):
+    out = []
+    for seg in re.split(r'[；;\n]+', str(s or '')):
+        seg = seg.strip()
+        if not seg:
+            continue
+        t, x = '记忆', seg
+        m = re.split(r'[:：]\s*', seg, 1)
+        if len(m) == 2 and m[0].strip() in HINT_TYPES:
+            t, x = m[0].strip(), m[1].strip()
+        if x:
+            out.append({'type': t, 'text': x})
+    return out
+
+
+def _cell_to_list(s):
+    return [x.strip() for x in re.split(r'[；;\n]+', str(s or '')) if x.strip()]
+
+
+def import_xlsx(raw):
+    rows = parse_xlsx(raw)
+    if not rows:
+        return {'ok': False, 'error': 'Excel 内容为空'}
+    header = [str(x).strip() for x in rows[0]]
+    if '单词' not in header:
+        return {'ok': False, 'error': '表头缺少「单词」列，请先用「导出 Excel」下载模板'}
+    idx = {h: i for i, h in enumerate(header)}
+    data = load_data()
+    words = data.get('words', [])
+    by_id = {w.get('id'): w for w in words}
+    by_word = {str(w.get('word') or '').strip().lower(): w for w in words}
+    updated = added = skipped = 0
+    next_id = max((w.get('id') or 0) for w in words) if words else 0
+    for r in rows[1:]:
+        cells = {h: (r[idx[h]] if idx[h] < len(r) else '') for h in header}
+        word = str(cells.get('单词') or '').strip()
+        if not word:
+            skipped += 1
+            continue
+        wid = str(cells.get('ID') or '').strip()
+        target = None
+        if wid:
+            try:
+                target = by_id.get(int(float(wid)))
+            except (ValueError, TypeError):
+                target = None
+        if target is None:
+            target = by_word.get(word.lower())
+        patch = {'word': word}
+        for name, key, kind in XLSX_COLUMNS:
+            if key in ('id', 'word'):
+                continue
+            rawv = str(cells.get(name) or '').strip()
+            if not rawv:
+                continue  # 留空 => 保持原值
+            if kind == 'hints':
+                patch[key] = _cell_to_hints(rawv)
+            elif kind == 'list':
+                patch[key] = _cell_to_list(rawv)
+            elif kind in ('num',):
+                patch[key] = _cell_to_num(rawv)
+            else:
+                patch[key] = rawv
+        if target is not None:
+            for k, v in patch.items():
+                target[k] = v
+            updated += 1
+        else:
+            next_id += 1
+            nw = {'id': next_id}
+            for _name, key, _kind in XLSX_COLUMNS:
+                if key != 'id':
+                    nw.setdefault(key, '')
+            nw.update(patch)
+            words.append(nw)
+            by_word[word.lower()] = nw
+            by_id[next_id] = nw
+            added += 1
+    save_data(data)
+    return {'ok': True, 'updated': updated, 'added': added, 'skipped': skipped, 'total': len(words)}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=APP_DIR, **kwargs)
@@ -246,6 +554,16 @@ class Handler(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store')
         super().end_headers()
+
+    def _binary(self, body, content_type, filename=None):
+        self.send_response(200)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(len(body)))
+        if filename:
+            self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(body)
 
     def _json(self, obj, status=200):
         body = json.dumps(obj, ensure_ascii=False).encode('utf-8')
@@ -271,7 +589,25 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json({'error': str(e)}, 500)
             return
         if path == '/api/status':
-            self._json({'ok': True, 'words': os.path.exists(DATA_FILE)})
+            with db_conn() as con:
+                n = con.execute('SELECT COUNT(*) FROM words').fetchone()[0]
+            self._json({'ok': True, 'words': n > 0, 'storage': 'sqlite'})
+            return
+        if path == '/api/state':
+            try:
+                self._json(load_state())
+            except Exception as e:
+                self._json({'error': str(e)}, 500)
+            return
+        if path == '/api/export.xlsx':
+            try:
+                qs = parse_qs(urlparse(self.path).query)
+                rows = xlsx_template_rows() if qs.get('template') else xlsx_export_rows(load_data())
+                name = 'words_template.xlsx' if qs.get('template') else 'words_' + __import__('datetime').date.today().isoformat() + '.xlsx'
+                self._binary(build_xlsx(rows),
+                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', name)
+            except Exception as e:
+                self._json({'error': str(e)}, 500)
             return
         if path == '/api/youdao':
             q = parse_qs(urlparse(self.path).query).get('q', [''])[0]
@@ -286,6 +622,24 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
+        if path == '/api/state':
+            try:
+                incoming = self._body()
+                cur = load_state()
+                cur.update(incoming)  # 局部合并, 未提交的键保持原值
+                save_state(cur)
+                self._json({'ok': True})
+            except Exception as e:
+                self._json({'ok': False, 'error': str(e)[:200]}, 500)
+            return
+        if path == '/api/import.xlsx':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                raw = self.rfile.read(n) if n else b''
+                self._json(import_xlsx(raw))
+            except Exception as e:
+                self._json({'ok': False, 'error': str(e)[:200]}, 500)
+            return
         if path == '/api/ai/reading':
             try:
                 self._json(deepseek_reading(self._body()))
@@ -346,11 +700,14 @@ class Handler(SimpleHTTPRequestHandler):
                 save_data(data)
                 self._json({'ok': True})
             elif path == '/api/reset':
-                if os.path.exists(BACKUP_FILE):
-                    shutil.copy2(BACKUP_FILE, DATA_FILE)
+                # 从首次导入种子重建词库（SQLite 下不再有 words.backup.json）
+                if os.path.exists(SEED_FILE):
+                    with open(SEED_FILE, encoding='utf-8') as f:
+                        seed = json.load(f)
+                    save_data(seed)
                     self._json({'ok': True})
                 else:
-                    self._json({'ok': False, 'error': '无备份'}, 400)
+                    self._json({'ok': False, 'error': '无种子文件'}, 400)
             else:
                 self._json({'error': 'unknown endpoint'}, 404)
         except Exception as e:
@@ -358,10 +715,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    if not os.path.exists(DATA_FILE):
-        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-        with open(DATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump({'source': '', 'words': []}, f)
+    init_db()
     srv = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
     print(f'✓ 刷单词服务已启动: http://localhost:{PORT}')
     print('  按 Ctrl+C 停止')

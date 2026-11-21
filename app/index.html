@@ -21,9 +21,13 @@
       </nav>
       <div class="top-actions">
         <span id="save-hint" class="save-hint"></span>
-        <button id="btn-export" class="ghost-btn" title="导出词库 + 学习进度/收藏">导出</button>
-        <button id="btn-import" class="ghost-btn" title="导入词库 + 学习进度/收藏">导入</button>
+        <button id="btn-export" class="ghost-btn" title="导出 JSON（词库 + 学习进度/收藏）">导出</button>
+        <button id="btn-import" class="ghost-btn" title="导入 JSON（词库 + 学习进度/收藏）">导入</button>
+        <button id="btn-export-xlsx" class="ghost-btn" title="导出词库为 Excel(.xlsx)，可直接用 Excel/WPS 编辑">导出Excel</button>
+        <button id="btn-template-xlsx" class="ghost-btn" title="下载 Excel 模板（表头 + 示例行）">Excel模板</button>
+        <button id="btn-import-xlsx" class="ghost-btn" title="从 Excel(.xlsx) 导入/更新词库">导入Excel</button>
         <input type="file" id="import-file" accept=".json" hidden>
+        <input type="file" id="import-xlsx-file" accept=".xlsx" hidden>
       </div>
     </div>
   </header>

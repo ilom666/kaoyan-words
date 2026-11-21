@@ -7,9 +7,7 @@
 
   let D = null;
   const E = (s) => D.esc(s);
-  const LS_AI_KEY = 'shuacidan_ai_key';
-  const LS_AI_ARTICLES = 'shuacidan_ai_articles_v1';
-  const MAX_SAVED_ARTICLES = 50;
+  const LS_AI_KEY = 'shuacidan_ai_key';  // API Key 例外: 仅本地浏览器暂存
 
   const R = {
     phase: 'menu',        // menu | loading | result | list | error
@@ -76,17 +74,13 @@
   }
 
   function loadSavedArticles() {
-    try {
-      const arr = JSON.parse(localStorage.getItem(LS_AI_ARTICLES) || '[]');
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
+    const arr = D.getArticles();
+    return Array.isArray(arr) ? arr : [];
   }
 
   function persistArticles(list) {
-    try {
-      localStorage.setItem(LS_AI_ARTICLES, JSON.stringify(list.slice(0, MAX_SAVED_ARTICLES)));
-      return true;
-    } catch { return false; }
+    D.saveArticles(list.slice(0, 50));
+    return true;
   }
 
   function saveCurrentArticle(r) {

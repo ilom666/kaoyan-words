@@ -8,8 +8,6 @@
 
   let D = null; // 依赖注入对象
   const E = (s) => D.esc(s);
-  const LS_GAME = 'shuacidan_games_v1';
-
   // 游戏运行时状态（模块私有）
   const G = {
     game: 'quick',        // quick 快问快答 | listen 听音辨词
@@ -37,6 +35,14 @@
       // 事件委托：只绑一次，动态渲染的题目也能响应
       root.addEventListener('click', onClick);
     }
+  }
+
+  function getGames() { return D.getGames() || {}; }
+  function bestOf(key) { return getGames()[key] || 0; }
+  function setBest(key, val) {
+    const all = getGames();
+    all[key] = val;
+    D.saveGames(all);
   }
 
   /* ---------- 题池与出题 ---------- */
@@ -172,16 +178,8 @@
     const acc = G.questions.length ? Math.round(G.correct / G.questions.length * 100) : 0;
     const grade = acc >= 90 ? 'S' : acc >= 75 ? 'A' : acc >= 60 ? 'B' : acc >= 40 ? 'C' : 'D';
     const key = G.game + '_' + G.scope;
-    let best = 0;
-    try { best = JSON.parse(localStorage.getItem(LS_GAME) || '{}')[key] || 0; } catch { }
-    if (G.score > best) {
-      best = G.score;
-      try {
-        const all = JSON.parse(localStorage.getItem(LS_GAME) || '{}');
-        all[key] = best;
-        localStorage.setItem(LS_GAME, JSON.stringify(all));
-      } catch { }
-    }
+    let best = bestOf(key);
+    if (G.score > best) { best = G.score; setBest(key, best); }
     renderResult(grade, acc, best);
   }
 
@@ -221,8 +219,7 @@
     const known = D.getKnown();
     const unq = D.getWords().filter(w => known[w.id] === 2).length;
     const star = D.getWords().filter(w => D.getStarred()[w.id] === 1).length;
-    let best = 0;
-    try { best = JSON.parse(localStorage.getItem(LS_GAME) || '{}')[G.game + '_' + G.scope] || 0; } catch { }
+    const best = bestOf(G.game + '_' + G.scope);
     root().innerHTML = `
       <section class="panel game-panel">
         <h2 class="game-title">🎮 单词小游戏</h2>
@@ -339,7 +336,7 @@
     if (acc === undefined) {
       acc = G.questions.length ? Math.round(G.correct / G.questions.length * 100) : 0;
       grade = acc >= 90 ? 'S' : acc >= 75 ? 'A' : acc >= 60 ? 'B' : acc >= 40 ? 'C' : 'D';
-      try { best = JSON.parse(localStorage.getItem(LS_GAME) || '{}')[G.game + '_' + G.scope] || 0; } catch { }
+      best = bestOf(G.game + '_' + G.scope);
     }
     const wrongHtml = G.wrongList.length
       ? `<div class="game-wrong"><h3>错题回顾 <span>${G.wrongList.length}</span></h3>${G.wrongList.map(x => `
