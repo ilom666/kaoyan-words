@@ -133,8 +133,22 @@ kbd { display: inline-block; padding: 1px 6px; border: 1px solid var(--line); bo
 .lesson-card.on .lc-check { opacity: 1; }
 .lesson-card .lc-bar { height: 6px; border-radius: 4px; background: var(--line); margin-top: 10px; overflow: hidden; }
 .lesson-card .lc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--ok), #4fc48f); border-radius: 4px; transition: width .3s; }
-.home-start { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border-top: 1px dashed var(--line); padding-top: 18px; }
-.sel-count { color: var(--ink-2); font-size: 13px; margin-left: auto; }
+/* 底部固定的开始刷词栏（与 .topbar / .topbar-inner 对称） */
+#view-home { padding-bottom: 24px; }
+.home-dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 20px rgba(30, 40, 70, .10);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.home-start {
+  max-width: 860px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 16px;
+}
+.sel-count { color: var(--ink-2); font-size: 13px; }
 
 /* ---- 刷词页(一屏自适应) ---- */
 body.studying { overflow: hidden; }
@@ -331,9 +345,12 @@ body.mg-drag-active, body.mg-drag-active * { cursor: grabbing !important; user-s
 
 /* ---- Toast ---- */
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 24px; border-radius: 99px; font-size: 14px; z-index: 60; box-shadow: var(--shadow); }
+#view-home:not([hidden]) ~ .toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
 
 @media (max-width: 620px) {
   #app { padding: 0 10px 40px; }
+  #view-home { padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px)); }
+  .home-start { padding: 10px 10px; gap: 10px; }
   .panel { padding: 16px; }
   .card { padding: 18px 16px 16px; }
   .nav-btn { padding: 7px 10px; font-size: 13px; }

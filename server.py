@@ -906,9 +906,18 @@ class Handler(SimpleHTTPRequestHandler):
             self._json({'error': str(e)}, 500)
 
 
+class QuietThreadingHTTPServer(ThreadingHTTPServer):
+    """客户端提前断开连接（刷新、关闭标签页、取消请求等）属正常现象，不再打印堆栈。"""
+    def handle_error(self, request, client_address):
+        exc = sys.exc_info()[1]
+        if isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
+            return
+        super().handle_error(request, client_address)
+
+
 if __name__ == '__main__':
     init_db()
-    srv = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
+    srv = QuietThreadingHTTPServer(('127.0.0.1', PORT), Handler)
     print(f'✓ 刷单词服务已启动: http://localhost:{PORT}')
     print('  按 Ctrl+C 停止')
     try:
