@@ -5,8 +5,7 @@
 .extract/
 
 # SQLite 运行时数据库（由 data/words.json 种子首次生成，不入库）
-data/app.db
-data/app.db-*
+data/app.db.bak.*
 data/words.export.json
 
 # 旧版文件 / 运行时生成的其它文件
@@ -17,3 +16,7 @@ data/quality_report.txt
 __pycache__/
 *.py[cod]
 .DS_Store
+
+//excel
+*.xls
+*.xlsx

@@ -32,6 +32,13 @@ if ! command -v "$PY" >/dev/null 2>&1 && [ ! -x "$PY" ]; then
   read -r -p "按回车键退出..."; exit 1
 fi
 
+# 8765 已有服务运行时不重复启动，避免残留多余端口进程
+if curl -fsS -m 2 http://127.0.0.1:8765/api/status >/dev/null 2>&1; then
+  echo "服务已在 8765 端口运行，直接打开浏览器（若页面显示旧 404，请按 Cmd+R 刷新）。"
+  open "http://localhost:8765"
+  exit 0
+fi
+
 echo "使用 $($PY --version 2>&1) 启动服务..."
 (sleep 1 && open "http://localhost:8765") &
 "$PY" server.py 8765

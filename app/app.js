@@ -143,7 +143,7 @@ const S = {
   listFrom: 'home',     // 列表来源视图
   listQ: '', listPage: 1, listSize: 50,
   listRevealed: new Set(),  // 当前已点开词义的词条 id
-  settings: { maskMode: 'both', autoSpeak: false, autoReveal: false, autoNextKnown: false, shuffle: false, unknownOnly: false, accent: 'uk', listMask: true, listGroupByUnit: false, listSize: 50, keys: cloneKeys(DEFAULT_KEYS) },
+  settings: { maskMode: 'both', autoSpeak: false, autoReveal: false, autoNextKnown: false, shuffle: false, groupByBadge: false, unknownOnly: false, accent: 'uk', listMask: true, listGroupByUnit: false, listSize: 50, keys: cloneKeys(DEFAULT_KEYS) },
   mg: { q: '', lesson: '', page: 1, size: 50, selectedId: null },
   editingId: null,
   editingAfterId: null,
@@ -588,6 +588,38 @@ function renderFlags(w) {
 }
 
 /* ---------- 学习队列 ---------- */
+// Fisher-Yates 洗牌，避免 sort(Math.random) 的分布偏差
+function shuffled(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 按徽标编组名重排：同编组连续出现，组内始终保持词库原顺序
+function groupPoolByBadge(pool, randomGroups) {
+  const groups = new Map();
+  for (const w of pool) {
+    const key = String(w.group || '').trim();
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(w);
+  }
+  const entries = [...groups.entries()];
+  if (randomGroups) {
+    // 开启随机时只交换组的位置，组内顺序不变
+    return shuffled(entries.map(e => e[1])).flat();
+  }
+  // 未开随机：编组名按中文拼音升序，无编组的放最后；组内仍保持原顺序
+  entries.sort((a, b) => {
+    if (!a[0] && b[0]) return 1;
+    if (a[0] && !b[0]) return -1;
+    return a[0].localeCompare(b[0], 'zh-Hans-CN');
+  });
+  return entries.flatMap(e => e[1]);
+}
+
 function startStudy(customPool, from) {
   let pool;
   if (Array.isArray(customPool)) {
@@ -603,8 +635,13 @@ function startStudy(customPool, from) {
     S.studyFrom = 'home';
   }
   if (!pool.length) { toast('没有可刷的单词'); return; }
-  // 保持词库当前顺序(含手动交换/插入后的顺序), 仅在开启随机时打乱
-  if (S.settings.shuffle) pool = [...pool].sort(() => Math.random() - .5);
+  // 默认保持词库当前顺序(含手动交换/插入后的顺序)
+  // 按编组刷词: 同编组连续出现、组内保序；随机顺序只交换组的位置
+  if (S.settings.groupByBadge) {
+    const groupCount = new Set(pool.map(w => String(w.group || '').trim())).size;
+    pool = groupPoolByBadge(pool, S.settings.shuffle);
+    toast(`已按 ${groupCount} 个编组排列${S.settings.shuffle ? '（组间随机）' : '（组内保持原顺序）'}`);
+  } else if (S.settings.shuffle) pool = shuffled(pool);
   S.queue = pool;
   S.qi = 0;
   S.studyActive = true;
@@ -1409,6 +1446,7 @@ function bind() {
   $('#sel-reset').onclick = resetProgress;
 
   $('#opt-shuffle').onchange = (e) => { S.settings.shuffle = e.target.checked; saveSettings(); };
+  $('#opt-group-badge').onchange = (e) => { S.settings.groupByBadge = e.target.checked; saveSettings(); };
   $('#opt-unknown-only').onchange = (e) => { S.settings.unknownOnly = e.target.checked; saveSettings(); };
   $('#opt-mask-mode').onchange = (e) => { S.settings.maskMode = e.target.value; saveSettings(); renderCard(); };
   $('#opt-auto-speak').onchange = (e) => { S.settings.autoSpeak = e.target.checked; saveSettings(); if (e.target.checked) speak(curWord()?.word); };
@@ -1583,6 +1621,7 @@ function finishKeyCapture(key) {
 /* ---------- 启动 ---------- */
 function syncSettingsUI() {
   $('#opt-shuffle').checked = S.settings.shuffle;
+  $('#opt-group-badge').checked = !!S.settings.groupByBadge;
   $('#opt-unknown-only').checked = S.settings.unknownOnly;
   $('#opt-mask-mode').value = S.settings.maskMode;
   $('#opt-auto-speak').checked = S.settings.autoSpeak;
