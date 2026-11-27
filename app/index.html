@@ -210,15 +210,14 @@
         <label class="toggle"><input type="checkbox" id="wl-mask-toggle"> 遮挡词义（逐个点击显示）</label>
         <button id="wl-reveal-all" class="ghost-btn" title="显示当前页全部词义">显示全部</button>
         <label class="toggle"><input type="checkbox" id="wl-group"> 按 Unit 分组</label>
-        <label class="wl-size-label">每页
-          <select id="wl-size">
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-          </select>
-        </label>
+        <div class="wl-size-label">每页
+          <div id="wl-sizes" class="wl-size-btns">
+            <button class="wl-size-btn" data-size="20">20</button>
+            <button class="wl-size-btn" data-size="50">50</button>
+            <button class="wl-size-btn" data-size="100">100</button>
+            <button class="wl-size-btn" data-size="150">150</button>
+          </div>
+        </div>
       </div>
       <div id="wl-list" class="mg-list"></div>
       <div class="mg-pager">
@@ -240,6 +239,15 @@
         <button id="mg-add" class="primary-btn">+ 新增词条</button>
       </div>
       <div class="mg-tip" id="mg-tip">💡 <b>长按词条拖动</b>调整顺序，松手保存；拖到顶/底部自动滚动，拖到下方「取消」区可放弃 · 单击选中 · 双击插入 · 点 ✏️ 编辑</div>
+      <div class="mg-size-row">
+        <span class="wl-size-label">每页</span>
+        <div id="mg-sizes" class="wl-size-btns">
+          <button class="wl-size-btn" data-size="20">20</button>
+          <button class="wl-size-btn" data-size="50">50</button>
+          <button class="wl-size-btn" data-size="100">100</button>
+          <button class="wl-size-btn" data-size="150">150</button>
+        </div>
+      </div>
       <div id="mg-list" class="mg-list"></div>
       <div id="mg-drag-cancel" class="mg-drag-cancel" hidden>✕ 拖到这里取消</div>
       <div class="mg-pager">

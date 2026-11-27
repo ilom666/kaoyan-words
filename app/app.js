@@ -8,14 +8,21 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 
 // 应用状态存服务端 SQLite；内存镜像让同步读写点无需大改，写回做 debounce
 let STATE = {};
+let STATE_LOAD_FAILED = false;
 let _stateTimer = null;
 let _stateDirty = false;
 
 async function loadState() {
   try {
     const r = await fetch('/api/state', { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     STATE = await r.json() || {};
-  } catch (e) { STATE = {}; }
+    STATE_LOAD_FAILED = false;
+  } catch (e) {
+    // 加载失败时保持内存为空，但绝不写回：避免服务未就绪时空状态覆盖已有进度
+    STATE = {};
+    STATE_LOAD_FAILED = true;
+  }
 }
 function store() { return STATE; }
 function saveStore(obj) {
@@ -27,6 +34,8 @@ function saveStore(obj) {
 async function flushState() {
   if (!_stateDirty) return;
   _stateDirty = false;
+  // 状态从未成功加载过：禁止把空状态写回，否则会覆盖服务端已有进度
+  if (STATE_LOAD_FAILED) return;
   try {
     await fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(STATE) });
   } catch (e) { /* 离线时保留内存状态, 下次保存会重试 */ }
@@ -144,7 +153,7 @@ const S = {
   listQ: '', listPage: 1, listSize: 50,
   listRevealed: new Set(),  // 当前已点开词义的词条 id
   settings: { maskMode: 'both', autoSpeak: false, autoReveal: false, autoNextKnown: false, shuffle: false, groupByBadge: false, unknownOnly: false, accent: 'uk', listMask: true, listGroupByUnit: false, listSize: 50, keys: cloneKeys(DEFAULT_KEYS) },
-  mg: { q: '', lesson: '', page: 1, size: 50, selectedId: null },
+  mg: { q: '', lesson: '', page: 1, size: 50, selectedId: null },   // size 与 settings.listSize 共用
   editingId: null,
   editingAfterId: null,
 };
@@ -292,10 +301,10 @@ function layoutStudy() {
 /* ---------- 发音 ---------- */
 let _ttsAudio = null;
 
-function speak(text, rate = 1) {
+function speak(text, rate = 1, forceYoudao = false) {
   if (!text) return;
   const accent = S.settings.accent || 'uk';
-  if (accent === 'sys') { speakSystem(text, rate); return; }
+  if (accent === 'sys' && !forceYoudao) { speakSystem(text, rate); return; }
   // 有道词典在线发音: type=2 美音 / type=1 英音, 音质远优于系统合成
   const type = accent === 'uk' ? 1 : 2;
   const url = `https://dict.youdao.com/dictvoice?type=${type}&audio=${encodeURIComponent(text)}`;
@@ -444,7 +453,7 @@ function openWordList(mode, from) {
   show('words');
 }
 
-const LIST_SIZES = [10, 20, 50, 100, 200];
+const LIST_SIZES = [20, 50, 100, 150];
 
 function unitKeyOf(w) {
   return `${w.part || 1}.${w.unit || 0}`;
@@ -478,7 +487,8 @@ function renderWordList() {
   // 控件状态
   $('#wl-mask-toggle').checked = maskOn;
   $('#wl-group').checked = grouped;
-  $('#wl-size').value = String(S.listSize);
+  document.querySelectorAll('#wl-sizes .wl-size-btn').forEach(b =>
+    b.classList.toggle('on', +b.dataset.size === S.listSize));
   $('#wl-reveal-all').disabled = !maskOn;
 
   $('#wl-title').textContent = starred ? '★ 已收藏的单词' : '😵 不认识的单词';
@@ -998,6 +1008,9 @@ function mgFiltered() {
 
 function renderMgList() {
   const list = mgFiltered();
+  S.mg.size = S.listSize;
+  document.querySelectorAll('#mg-sizes .wl-size-btn').forEach(b =>
+    b.classList.toggle('on', +b.dataset.size === S.mg.size));
   const pages = Math.max(1, Math.ceil(list.length / S.mg.size));
   S.mg.page = Math.min(S.mg.page, pages);
   const slice = list.slice((S.mg.page - 1) * S.mg.size, S.mg.page * S.mg.size);
@@ -1410,11 +1423,24 @@ function bind() {
   $('#wl-next').onclick = () => { if (S.listPage < Math.ceil(listWords().length / S.listSize)) wlPage(S.listPage + 1); };
   $('#wl-first').onclick = () => wlPage(1);
   $('#wl-last').onclick = () => wlPage(Math.max(1, Math.ceil(listWords().length / S.listSize)));
-  $('#wl-size').onchange = (e) => {
-    S.listSize = LIST_SIZES.includes(+e.target.value) ? +e.target.value : 50;
-    S.settings.listSize = S.listSize;
+  const setPageSize = (size) => {
+    if (!LIST_SIZES.includes(size) || size === S.listSize) return;
+    S.listSize = size;
+    S.mg.size = size;
+    S.settings.listSize = size;
     saveSettings();
-    S.listPage = 1; S.listRevealed.clear(); renderWordList();
+    S.listPage = 1; S.mg.page = 1;
+    S.listRevealed.clear();
+    renderWordList();
+    if (!$('#view-manage').hidden) renderMgList();
+  };
+  $('#wl-sizes').onclick = (e) => {
+    const b = e.target.closest('.wl-size-btn');
+    if (b) setPageSize(+b.dataset.size);
+  };
+  $('#mg-sizes').onclick = (e) => {
+    const b = e.target.closest('.wl-size-btn');
+    if (b) setPageSize(+b.dataset.size);
   };
   $('#wl-mask-toggle').onchange = (e) => {
     S.settings.listMask = e.target.checked;
@@ -1631,7 +1657,10 @@ function syncSettingsUI() {
   $('#wl-mask-toggle').checked = !!S.settings.listMask;
   $('#wl-group').checked = !!S.settings.listGroupByUnit;
   S.listSize = LIST_SIZES.includes(+S.settings.listSize) ? +S.settings.listSize : 50;
-  $('#wl-size').value = String(S.listSize);
+  S.settings.listSize = S.listSize;
+  S.mg.size = S.listSize;
+  document.querySelectorAll('.wl-size-btns .wl-size-btn').forEach(b =>
+    b.classList.toggle('on', +b.dataset.size === S.listSize));
   renderKeySettings();
 }
 
@@ -1642,7 +1671,8 @@ async function init() {
   S.starred = st.starred || {};
   mergeSettings(st.settings || {});
   // 一次性迁移: 默认口音改为英音(之后用户手动切换会被尊重)
-  if (!st.accentV2) {
+  // 状态加载失败时不做迁移写入, 避免空状态覆盖已有进度
+  if (!st.accentV2 && !STATE_LOAD_FAILED) {
     S.settings.accent = 'uk';
     saveStore({ ...store(), accentV2: true, settings: S.settings });
   }
@@ -1661,6 +1691,7 @@ async function init() {
     esc,
     toast,
     speak,
+    speakYoudao: (text) => speak(text, 1, true),
     phoneticOf,
     getWords: () => S.words,
     getKnown: () => S.known,

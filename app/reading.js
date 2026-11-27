@@ -21,6 +21,7 @@
     answers: {},
     transOpen: new Set(),
     qTransOpen: new Set(),
+    showLocalWords: false,   // 查看界面：是否显示本文命中的本地词库单词
     seq: 0,
     pop: null,
   };
@@ -267,10 +268,12 @@
     const usedHtml = used.length
       ? `<div class="ai-used"><span>本文用到：</span>${used.map(w => `<button class="ai-chip" data-act="reading-say" data-word="${E(w)}">${E(w)}</button>`).join('')}</div>`
       : '';
+    const localOn = R.showLocalWords;
+    const escArticle = (s) => localOn ? highlightLocalWords(s) : E(s).replace(/\n/g, '<br>');
     const paraHtml = paras.map((p, i) => {
       const open = R.transOpen.has(i);
       return `<div class="ai-para">
-        <div class="ai-para-en">${E(p.en).replace(/\n/g, '<br>')}</div>
+        <div class="ai-para-en">${escArticle(p.en)}</div>
         ${p.zh ? `<button class="ai-trans-toggle${open ? ' open' : ''}" data-act="reading-para-trans" data-pi="${i}">${open ? '隐藏翻译' : '显示翻译'}</button>
         <div class="ai-para-zh" ${open ? '' : 'hidden'}>${E(p.zh).replace(/\n/g, '<br>')}</div>` : ''}
       </div>`;
@@ -285,6 +288,7 @@
           </div>
         </div>
         <p class="reading-sub">拖动鼠标选中文章里的单词，即可查看翻译（优先本地词库）</p>
+        <label class="ai-local-toggle"><input type="checkbox" id="ai-local-words" data-act="reading-local-toggle" ${localOn ? 'checked' : ''}> 在原文中标记本地词库单词（底纹）</label>
         <div class="ai-paper">
           <div class="ai-article">${paraHtml}</div>
           ${usedHtml}
@@ -390,6 +394,24 @@
     return s;
   }
 
+  // 原文中命中本地词库的单词加底纹（保留原词形、标点与换行）
+  function highlightLocalWords(text) {
+    const byKey = new Map();
+    D.getWords().forEach(w => {
+      const key = normalizeWord(w.word);
+      if (key) byKey.set(key, true);
+    });
+    const chunks = String(text || '').split(/([A-Za-z][A-Za-z'’-]{0,29})/);
+    return chunks.map(part => {
+      if (!/^[A-Za-z][A-Za-z'’-]{0,29}$/.test(part)) {
+        return E(part).replace(/\n/g, '<br>');
+      }
+      const key = normalizeWord(part.replace(/[’‘]/g, "'"));
+      const safe = E(part);
+      return byKey.has(key) ? `<span class="ai-local-hit">${safe}</span>` : safe;
+    }).join('');
+  }
+
   async function lookupWord(word) {
     const words = D.getWords();
     const direct = words.find(w => String(w.word || '').trim().toLowerCase() === word);
@@ -457,6 +479,10 @@
     else if (act === 'reading-length') { R.length = val; renderMenu(); }
     else if (act === 'reading-qcount') { R.qCount = +val; renderMenu(); }
     else if (act === 'reading-generate') { generateReading(); }
+    else if (act === 'reading-local-toggle') {
+      R.showLocalWords = btn.checked;
+      if (R.result) renderResult();
+    }
     else if (act === 'reading-open') { openSavedArticle(+btn.dataset.id); }
     else if (act === 'reading-del') { deleteSavedArticle(+btn.dataset.id); }
     else if (act === 'reading-answer') { answer(+btn.dataset.qi, +btn.dataset.oi); }

@@ -8,6 +8,35 @@
 
   let D = null; // 依赖注入对象
   const E = (s) => D.esc(s);
+
+  // 答题音效：Web Audio 直接合成，无外部音频文件
+  let _sfxCtx = null;
+  function playSfx(ok) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!_sfxCtx) _sfxCtx = new AC();
+      if (_sfxCtx.state === 'suspended') _sfxCtx.resume();
+      const t = _sfxCtx.currentTime;
+      // 答对：C5-E5-G5-C6 快速上行琶音，末音拖长，像闯关奖励
+      // 答错：下行低音（保持不变）
+      const notes = ok
+        ? [[523.25, 0, 0.16], [659.25, 0.07, 0.16], [783.99, 0.14, 0.16], [1046.5, 0.21, 0.30]]
+        : [[330, 0, 0.14], [196, 0.11, 0.14]];
+      notes.forEach(([freq, delay, dur]) => {
+        const osc = _sfxCtx.createOscillator();
+        const gain = _sfxCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + delay);
+        gain.gain.setValueAtTime(0.0001, t + delay);
+        gain.gain.exponentialRampToValueAtTime(ok ? 0.16 : 0.14, t + delay + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + dur);
+        osc.connect(gain).connect(_sfxCtx.destination);
+        osc.start(t + delay);
+        osc.stop(t + delay + dur + 0.02);
+      });
+    } catch (e) { /* 音效不可用时静默跳过，不影响游戏 */ }
+  }
   // 游戏运行时状态（模块私有）
   const G = {
     game: 'quick',        // quick 快问快答 | listen 听音辨词
@@ -130,12 +159,23 @@
     G.idx = 0; G.score = 0; G.combo = 0; G.maxCombo = 0;
     G.correct = 0; G.wrongList = []; G.phase = 'playing';
     renderQuestion();
-    if (G.game === 'listen') speakCurrent();
+    if (shouldSpeak()) speakCurrent();
+  }
+
+  // 需要朗读题干的模式：听音辨词、快问快答「看英文选中文」
+  function shouldSpeak() {
+    return G.game === 'listen' || (G.game === 'quick' && G.direction === 'en2zh');
   }
 
   function speakCurrent() {
     const q = G.questions[G.idx];
-    if (q && q.word) D.speak(q.word.word);
+    if (!q || !q.word) return;
+    // 看英文选中文强制用有道接口朗读（不受系统语音设置影响）
+    if (G.game === 'quick' && G.direction === 'en2zh' && D.speakYoudao) {
+      D.speakYoudao(q.word.word);
+    } else {
+      D.speak(q.word.word);
+    }
   }
 
   function stopTimer() {
@@ -159,6 +199,7 @@
       G.score = Math.max(0, G.score - 50);
       G.wrongList.push({ word: q.word.word, meaning: q.word.meaning, picked: q.options[choice], right: q.options[q.answer] });
     }
+    playSfx(ok);
     renderFeedback(ok, gain, choice);
     const timer = setTimeout(() => next(), ok ? 850 : 1500);
     G._advTimer = timer;
@@ -169,7 +210,7 @@
     if (G.idx + 1 >= G.questions.length) { finish(); return; }
     G.idx++;
     renderQuestion();
-    if (G.game === 'listen') speakCurrent();
+    if (shouldSpeak()) speakCurrent();
   }
 
   function finish() {
@@ -298,7 +339,7 @@
         <div class="game-question">
           ${q.sub && G.game === 'quick' && G.direction === 'en2zh' ? `<div class="game-q-phonetic">${E(q.sub)}</div>` : ''}
           <div class="game-q-main ${G.game === 'listen' || (G.game === 'quick' && G.direction === 'zh2en') ? 'small' : ''}">${E(q.prompt)}</div>
-          ${G.game === 'listen' ? '<button class="game-replay" data-act="replay">🔊 再听一遍</button>' : ''}
+          ${shouldSpeak() ? '<button class="game-replay" data-act="replay">🔊 再听一遍</button>' : ''}
         </div>
 
         <div class="game-options">
