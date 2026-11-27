@@ -2,7 +2,7 @@
 """刷单词 Web 应用服务器（零依赖，Python 标准库实现）
 用法: python3 server.py [端口]   默认 8765
 接口:
-  存储: SQLite data/app.db（词库 + 应用状态）；data/words.json 仅作首次导入种子
+  存储: SQLite data/app.db（本地运行库，词库 + 个人状态，不入库）；data/words.db 为随仓库发布的纯净词库（仅词库）
   GET  /api/words   读取词库
   GET  /api/state   读取应用状态(进度/收藏/设置/游戏记录/文章)
   POST /api/state   保存应用状态  body: 状态对象(与现有合并)
@@ -10,7 +10,7 @@
   POST /api/add     新增词条          body: {词条对象}
   POST /api/reorder 重排同一课内的词内序号 body: {"ids":[该课全部词条ID的新顺序]}
   POST /api/delete  删除词条          body: {"id": 3}
-  POST /api/reset   恢复上次备份
+  POST /api/reset   从纯净词库 data/words.db 恢复初始词库（不影响个人进度）
   POST /api/ai/reading  用已学单词生成阅读理解(DeepSeek 代理)
                      body: {"topic","length","questionCount","words":[...],"apiKey"}
   GET  /api/export.xlsx 导出词库为 Excel(.xlsx)
@@ -25,8 +25,8 @@ from urllib.parse import urlparse, parse_qs
 ROOT = os.path.dirname(os.path.abspath(__file__))
 APP_DIR = os.path.join(ROOT, 'app')
 DATA_DIR = os.path.join(ROOT, 'data')
-SEED_FILE = os.path.join(DATA_DIR, 'words.json')       # 首次导入种子(不再被写入)
-DB_FILE = os.path.join(DATA_DIR, 'app.db')             # SQLite: 词库 + 应用状态
+SEED_DB = os.path.join(DATA_DIR, 'words.db')           # 仓库分发的纯净词库(仅词库, 无个人状态)
+DB_FILE = os.path.join(DATA_DIR, 'app.db')             # 本地运行库: 词库 + 个人状态(不入库)
 EXPORT_FILE = os.path.join(DATA_DIR, 'words.export.json')  # JSON 导出用(按需生成)
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 # DeepSeek 配置：密钥只从环境变量或单次请求体读取，不写入任何文件
@@ -161,7 +161,7 @@ def renumber_seq(con, key=None):
 
 
 def init_db():
-    """建结构化表；从旧 JSON 列或 words.json 种子迁移。"""
+    """建结构化表；首次运行时从纯净词库 words.db 导入。"""
     with db_conn() as con:
         con.execute('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)')
         con.execute(f'CREATE TABLE IF NOT EXISTS words ({WORD_COLS_SQL})')
@@ -173,11 +173,12 @@ def init_db():
             con.execute('DROP TABLE words')
             con.execute(f'CREATE TABLE words ({WORD_COLS_SQL})')
             con.executemany(WORD_INSERT, [word_to_row(dict(w, id=i)) for i, w in old])
-        elif not con.execute('SELECT COUNT(*) FROM words').fetchone()[0] and os.path.exists(SEED_FILE):
-            with open(SEED_FILE, encoding='utf-8') as f:
-                seed = json.load(f)
-            con.executemany(WORD_INSERT, [word_to_row(w) for w in seed.get('words', []) if w.get('id')])
-            con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', seed.get('source', '')))
+        elif not con.execute('SELECT COUNT(*) FROM words').fetchone()[0] and os.path.exists(SEED_DB):
+            with sqlite3.connect(SEED_DB) as seed:
+                seed.row_factory = sqlite3.Row
+                con.executemany(WORD_INSERT, [word_to_row(dict(r)) for r in seed.execute('SELECT * FROM words') if r['id']])
+                src = seed.execute("SELECT value FROM meta WHERE key='source'").fetchone()
+                con.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', ('source', src['value'] if src else ''))
         if 'seq' not in [r['name'] for r in con.execute('PRAGMA table_info(words)')]:
             con.execute('ALTER TABLE words ADD COLUMN seq INTEGER NOT NULL DEFAULT 0')
         renumber_seq(con)
@@ -892,14 +893,16 @@ class Handler(SimpleHTTPRequestHandler):
                         renumber_seq(con, key)
                 self._json({'ok': True})
             elif path == '/api/reset':
-                # 从首次导入种子重建词库（SQLite 下不再有 words.backup.json）
-                if os.path.exists(SEED_FILE):
-                    with open(SEED_FILE, encoding='utf-8') as f:
-                        seed = json.load(f)
-                    save_data(seed)
+                # 从纯净词库恢复初始词库（不触碰个人进度/收藏/设置）
+                if os.path.exists(SEED_DB):
+                    with sqlite3.connect(SEED_DB) as seed:
+                        seed.row_factory = sqlite3.Row
+                        words = [row_to_word(r) for r in seed.execute('SELECT * FROM words')]
+                        src = seed.execute("SELECT value FROM meta WHERE key='source'").fetchone()
+                    save_data({'source': src['value'] if src else '', 'words': words})
                     self._json({'ok': True})
                 else:
-                    self._json({'ok': False, 'error': '无种子文件'}, 400)
+                    self._json({'ok': False, 'error': '无纯净词库文件 data/words.db'}, 400)
             else:
                 self._json({'error': 'unknown endpoint'}, 404)
         except Exception as e:

@@ -4,9 +4,11 @@
 # OCR 提取与解析脚本（不随仓库发布）
 .extract/
 
-# SQLite 运行时数据库（由 data/words.json 种子首次生成，不入库）
+# SQLite 本地运行库（含学习进度/收藏/设置，不入库）；随仓库发布的是纯净词库 data/words.db
+data/app.db
 data/app.db.bak.*
 data/words.export.json
+data/*.db.tmp
 
 # 旧版文件 / 运行时生成的其它文件
 data/words.backup.json

@@ -17,15 +17,16 @@ words/
 │   ├── games.js          小游戏模块：快问快答 / 听音辨词，仅暴露 WordGames
 │   └── reading.js        AI 阅读理解模块：生成、划词翻译、保存，仅暴露 WordReading
 ├── data/
-│   ├── words.json        词库种子：首次启动导入 SQLite，之后不再写入；提交此文件即提交词库更新
-│   └── app.db            SQLite 运行时库（词库 + 进度 + 设置 + 游戏记录 + 文章），自动生成、不入库
+│   ├── words.db          纯净词库（仅词库，无个人状态），随仓库发布；用 python3 export_db.py 从本地 app.db 导出
+│   └── app.db            SQLite 本地运行库（词库 + 进度 + 收藏 + 设置 + 游戏记录 + 文章），自动生成、不入库
 ├── docs/
 │   ├── DEEPSEEK.md       DeepSeek API 接入说明（申请、配置、调用链、排错）
 │   ├── EXCEL.md          Excel 模板表头、字段格式与导入规则
 │   └── YOUDAO.md         有道词典接入说明
 ├── server.py             零依赖 Python 标准库服务：静态文件 + 词库增删改 + 有道/DeepSeek 代理
+├── export_db.py          导出纯净词库：从本地 app.db 生成 data/words.db（去除个人状态）
 ├── start.command/.bat/.sh   macOS / Windows / Linux 一键启动脚本
-└── .gitignore            排除原书 PDF、OCR 脚本、备份与运行时文件
+└── .gitignore            排除原书 PDF、OCR 脚本、备份与本地运行库
 ```
 
 模块之间通过依赖注入协作：`app.js` 只把 `esc / toast / speak / getWords / getKnown / fetchYoudao / openGame / openReading` 等能力传给 `games.js`、`reading.js`，两个子模块互不读写对方内部变量。
@@ -40,13 +41,31 @@ words/
 | Windows | `start.bat` | `python server.py` |
 | Linux | `start.sh` | `python3 server.py` |
 
-> **跨电脑运行说明（零预装）**：`server.py` 是纯 Python 3 代码，拷走整个文件夹即可在任何电脑运行。三个 `start.*` 脚本已经把下载安装写进去了——**双击时若检测到系统没有 Python，会自动下载官方 Python 3 安装包并静默安装，然后启动服务**（macOS 下载 python.org 的 `.pkg` 需输入开机密码；Windows 下载 `.exe` 静默装到当前用户目录，无需管理员；Linux 按发行版调用 `apt`/`dnf`/`yum` 等，需 sudo）。安装只需一次，之后直接启动。若自动安装失败（如无网络），脚本会提示手动安装地址，也可直接用命令行启动。默认端口 8765，可用 `python3 server.py 9999` 更换（`start.*` 固定为 8765）。
+> **跨电脑运行说明（零预装）**：`server.py` 是纯 Python 3 代码，拷走整个文件夹即可在任何电脑运行。三个 `start.*` 脚本已经把下载安装写进去了——**双击时若检测到系统没有 Python，会自动下载官方 Python 3 安装包并静默安装，然后启动服务**（macOS 下载 python.org 的 `.pkg` 需输入开机密码；Windows 下载 `.exe` 静默装到当前用户目录，无需管理员；Linux 按发行版调用 `apt`/`dnf`/`yum` 等，需 sudo）。安装只需一次，之后直接启动。若自动安装失败（如无网络），脚本会提示手动安装地址，也可直接用命令行启动。默认端口 8765，可用 `python3 server.py 9999` 更换（`start.*` 固定为 8765）。首次启动若本地没有 `data/app.db`，会自动从仓库自带的 `data/words.db` 生成一份全新的运行库（零进度）。
 
 > **macOS 首次双击提示「无法验证 start.command / Apple 无法确认是否包含恶意软件」**：这是系统的 Gatekeeper 隔离机制——从浏览器下载的 ZIP 解压后，文件会带 `com.apple.quarantine` 标记，未签名的脚本首次双击会被拦截。在项目文件夹里打开「终端」，执行下面一条命令清除标记，之后双击即可正常启动：
 > ```bash
 > xattr -dr com.apple.quarantine .
 > ```
 > 该命令只删除隔离属性、不改动任何文件内容。若不想用终端，也可到「系统设置 → 隐私与安全性 → 安全性」里，找到被阻止的 `start.command` 提示并点「仍要打开」。若仍被拦截，可直接用命令行启动：`cd 项目文件夹 && python3 server.py`，效果与双击脚本相同。GitHub 用 `git clone` 克隆的仓库不带隔离标记，通常不会遇到该提示。
+
+## 词库更新与发布
+
+仓库只提交**纯净词库** `data/words.db`（词库本身，不含学习进度、收藏、设置、游戏记录、文章），本地运行库 `data/app.db` 永不入库。更新词库后按下面流程发布：
+
+```bash
+# 1. 在应用里改完词库（编辑/新增/删除/Excel 导入等，改动实时写入本地 app.db）
+# 2. 导出纯净词库（覆盖 data/words.db）
+python3 export_db.py
+# 3. 只提交纯净词库与代码改动
+git add data/words.db
+git commit -m "更新词库"
+git push
+```
+
+- 导出脚本只复制 `words`（词库）和 `meta`（来源）表，`state` 置为 `{}`，因此提交的永远只有词库改动。
+- 换电脑或重新克隆后，本地没有 `app.db` 时会自动从 `words.db` 生成一份零进度的运行库；个人的学习数据不会随仓库传播。
+- 前端「导入 / 导出」里的 JSON 导出仍会带上学习进度/收藏，那是个人的本地备份文件，不要提交到仓库。
 
 ## 功能
 
@@ -74,7 +93,7 @@ words/
   - 键盘 `1`~`4` 快速作答、`E` 朗读、`Esc` 退出；游戏模块 `app/games.js` 通过依赖注入复用主程序的词库/进度/发音，与主逻辑低耦合
 - **统计**：总览与每课认识率
 - **按键设置**：顶栏「设置」页可为刷词、小游戏、AI 阅读理解自定义按键，预置默认值；支持单个功能重新绑定、清除和一键恢复默认，配置随设置持久化到 SQLite
-- **数据存储（SQLite）**：词库与所有应用状态统一存 `data/app.db`（由标准库 `sqlite3` 读写，零依赖）；`data/words.json` 只作首次导入种子。`words` 表为**结构化列**（每个字段一列，`hints`/`derivatives`/`phrases`/`notes`/`related` 五个数组字段以 JSON 文本列保存）；`id` 是稳定主键，`seq` 是每课内从 1 开始的序号，词库按课程分组后按 `seq` 读取。支持按字段 SQL 查询与单条 `UPDATE/INSERT/DELETE`，拖拽排序只批量更新本课的 `seq`。学习进度、收藏、设置、选中课程、小游戏最高分、阅读文章也在 SQLite，不再用浏览器 localStorage；**唯一例外是 DeepSeek API Key**，仅暂存浏览器本地。JSON / Excel 导出导入仍可用
+- **数据存储（SQLite）**：词库与所有应用状态统一存本地 `data/app.db`（由标准库 `sqlite3` 读写，零依赖）；仓库分发的 `data/words.db` 是只含词库的纯净库，用于首次启动或 `/api/reset` 恢复。`words` 表为**结构化列**（每个字段一列，`hints`/`derivatives`/`phrases`/`notes`/`related` 五个数组字段以 JSON 文本列保存）；`id` 是稳定主键，`seq` 是每课内从 1 开始的序号，词库按课程分组后按 `seq` 读取。支持按字段 SQL 查询与单条 `UPDATE/INSERT/DELETE`，拖拽排序只批量更新本课的 `seq`。学习进度、收藏、设置、选中课程、小游戏最高分、阅读文章也在 SQLite，不再用浏览器 localStorage；**唯一例外是 DeepSeek API Key**，仅暂存浏览器本地。JSON / Excel 导出导入仍可用
 - **Excel 导入导出**：顶栏「导入 / 导出」下拉菜单中可把词库导出为 `.xlsx`、下载带示例的模板，以及把编辑好的表写回词库；表头、字段格式与导入规则见 [docs/EXCEL.md](docs/EXCEL.md)。JSON 导出仍保留，且会额外带上学习进度/收藏
 
 ## AI 阅读理解配置（DeepSeek）
@@ -90,7 +109,7 @@ words/
 
 ## 词库来源
 
-词库数据由《考研英语你还在背单词吗？》电子PDF扫描版经本地 OCR 识别与结构化整理得到，本仓库以 `data/words.json` 作为结构化词库种子（运行时导入 SQLite）；原书 PDF 与 OCR 提取脚本未随仓库发布。
+词库数据由《考研英语你还在背单词吗？》电子PDF扫描版经本地 OCR 识别与结构化整理得到，本仓库以 `data/words.db` 作为结构化词库发布文件（首次运行时导入本地 SQLite）；原书 PDF 与 OCR 提取脚本未随仓库发布。
 
 音标统一为有道词典标准 IPA（美音 `phonetic`，英音 `phonetic_uk`），切换「发音」设置时卡片音标自动切换。由于原书为扫描件，个别词条的词义/例句可能存在串栏粘连或识别错误（部分词条已标「待校对」），可在「词库管理」或刷词卡片右上角 ✏️ 中直接修正。
 
