@@ -20,6 +20,7 @@ words/
 │   ├── words.db          纯净词库（仅词库，无个人状态），随仓库发布；用 python3 export_db.py 从本地 app.db 导出
 │   └── app.db            SQLite 本地运行库（词库 + 进度 + 收藏 + 设置 + 游戏记录 + 文章），自动生成、不入库
 ├── docs/
+│   ├── ANDROID.md        在安卓手机上使用（Termux 手动部署说明）
 │   ├── DEEPSEEK.md       DeepSeek API 接入说明（申请、配置、调用链、排错）
 │   ├── EXCEL.md          Excel 模板表头、字段格式与导入规则
 │   └── YOUDAO.md         有道词典接入说明
@@ -115,6 +116,7 @@ git push
 
 ## 文档
 
+- [在安卓手机上使用](docs/ANDROID.md)：用 Termux 手动部署与访问本应用
 - [DeepSeek API 接入说明](docs/DEEPSEEK.md)：Key 申请、配置方式、调用链、数据结构、排错与费用
 - [Excel 模板与导入导出说明](docs/EXCEL.md)：模板表头、字段格式、匹配规则与常见问题
 - [有道词典接入说明](docs/YOUDAO.md)：接口、解析规则、前端/服务端调用、排错
