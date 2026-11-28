@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """刷单词 Web 应用服务器（零依赖，Python 标准库实现）
-用法: python3 server.py [端口]   默认 8765
+用法: python3 server.py [端口]   默认 8765；WORDS_HOST 可覆盖监听地址（默认 0.0.0.0，允许同一 WiFi 的设备访问）
 接口:
   存储: SQLite data/app.db（本地运行库，词库 + 个人状态，不入库）；data/words.db 为随仓库发布的纯净词库（仅词库）
   GET  /api/words   读取词库
@@ -19,6 +19,7 @@
 import json, os, re, shutil, sys, urllib.error, io, zipfile, sqlite3
 import xml.etree.ElementTree as ET
 import urllib.request, urllib.parse
+import socket
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -918,10 +919,29 @@ class QuietThreadingHTTPServer(ThreadingHTTPServer):
         super().handle_error(request, client_address)
 
 
+def lan_ip():
+    """取一个可用于局域网访问的本机 IPv4 地址（不依赖第三方库）。"""
+    s = None
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('10.255.255.255', 1))
+        return s.getsockname()[0]
+    except OSError:
+        return None
+    finally:
+        if s:
+            s.close()
+
+
 if __name__ == '__main__':
     init_db()
-    srv = QuietThreadingHTTPServer(('127.0.0.1', PORT), Handler)
+    HOST = os.environ.get('WORDS_HOST', '0.0.0.0')
+    srv = QuietThreadingHTTPServer((HOST, PORT), Handler)
     print(f'✓ 刷单词服务已启动: http://localhost:{PORT}')
+    if HOST in ('0.0.0.0', ''):
+        ip = lan_ip()
+        if ip:
+            print(f'  同一 WiFi 下可用: http://{ip}:{PORT}')
     print('  按 Ctrl+C 停止')
     try:
         srv.serve_forever()

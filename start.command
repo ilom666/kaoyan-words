@@ -7,6 +7,14 @@ PY=python3
 VER=3.15.2
 PKG="$HOME/Downloads/python-$VER-macos11.pkg"
 
+lan_tip() {
+  local ip
+  ip=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)
+  if [ -n "$ip" ]; then
+    echo "同一 WiFi 下可用: http://$ip:8765"
+  fi
+}
+
 if ! command -v "$PY" >/dev/null 2>&1; then
   echo "未检测到 Python 3，正在下载官方安装包（Python $VER）..."
   echo "下载地址: https://www.python.org/ftp/python/$VER/python-$VER-macos11.pkg"
@@ -35,10 +43,12 @@ fi
 # 8765 已有服务运行时不重复启动，避免残留多余端口进程
 if curl -fsS -m 2 http://127.0.0.1:8765/api/status >/dev/null 2>&1; then
   echo "服务已在 8765 端口运行，直接打开浏览器（若页面显示旧 404，请按 Cmd+R 刷新）。"
+  lan_tip
   open "http://localhost:8765"
   exit 0
 fi
 
 echo "使用 $($PY --version 2>&1) 启动服务..."
+lan_tip
 (sleep 1 && open "http://localhost:8765") &
 "$PY" server.py 8765
